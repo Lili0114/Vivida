@@ -11,6 +11,7 @@ import Welcome from './Screens/Welcome';
 import Home from './Screens/Home';
 import Account from './Screens/Account';
 import Stopwatch from './Screens/StopWatch';
+import Plans from './Screens/Plans';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -18,7 +19,8 @@ const Tab = createBottomTabNavigator();
 function Tabs() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name='FirstPage' component={Home} options={{ headerShown: false }} />
+      <Tab.Screen name='Home' component={Home} options={{ headerShown: false }} />
+      <Tab.Screen name='Plans' component={Plans} options={{headerShown: false}} />
       <Tab.Screen name='Workout' component={Stopwatch} options={{ headerShown: false }} />
       <Tab.Screen name='Profile' component={Account} options={{ headerShown: false }} />
     </Tab.Navigator>
@@ -85,8 +87,15 @@ const App = () => {
           }} />
         
         <Stack.Screen
-          name="Home"
+          name="HomePage"
           component={Tabs}
+          options={{
+            headerShown: false
+          }} />
+        
+        <Stack.Screen
+          name="Plans"
+          component={Plans}
           options={{
             headerShown: false
           }} />

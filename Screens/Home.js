@@ -1,41 +1,68 @@
-import { Text, StyleSheet, View } from 'react-native';
-import React, { Component } from 'react';
+import { Text, StyleSheet, View, Animated } from 'react-native';
+import React, { Component, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Progress from 'react-native-progress';
+import { Button, Image } from 'react-native-elements';
 
 const Home = () => {
+    const [progress, setProgress] = useState(0);
+
+    const counter = useRef(new Animated.Value(0)).current;
+    const width = counter.interpolate({
+        inputRange: [0, 100],
+        outputRange: ["0%", "100%"],
+        extrapolate: "clamp"
+      })
+
+    const handlePress = () => {
+      setProgress((prevProgress) => prevProgress + 0.1);
+    };
 
     return (
-        <View>
+        <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
-                <Text style={[styles.header, styles.boldText]}>Kezdőoldal</Text>
+                <Text style={[styles.header, styles.boldText]}>Home</Text>
             </View>
 
             <View style={styles.progressContainer}>
-                <Text style={styles.regularText}>Tekintsd meg, hogy hogyan teljesítesz:</Text>
-                <Progress.Bar style={styles.progressBar} />
+                <Text style={styles.regularText}>Take a look at how much progress you've made:</Text>
+                <View style={styles.progressBar}>
+                    <Animated.View style={{ ...StyleSheet.absoluteFill, borderRadius: 10, backgroundColor: "violet", width: "70%" }}/>
+                </View>
             </View>
 
             <View style={styles.iconsContainer}>
                 <View style={styles.icons}>
-                    <Text style={styles.iconText}>Kategóriák</Text>
+                    <Image 
+                        source={require('../assets/images/triangle.png')}
+                        style={styles.categoryCardImageInCaseOfLongText}/>
+                    <Text style={styles.iconText}>Daily {"\n"}measurements</Text>
                 </View>
                 <View style={styles.icons}>
-                    <Text style={styles.iconText}>Ranglista</Text>
+                    <Image 
+                        source={require('../assets/images/triangle.png')}
+                        style={styles.categoryCardImage}/>
+                    <Text style={styles.iconText}>Statistics</Text>
                 </View>
                 <View style={styles.icons}>
-                    <Text style={styles.iconText}>Ingyenes kurzusok</Text>
-                </View>
-                <View style={styles.icons}>
-                    <Text style={styles.iconText}>Egyéb</Text>
+                    <Image 
+                        source={require('../assets/images/triangle.png')}
+                        style={styles.categoryCardImage}/>
+                    <Text style={styles.iconText}>Other</Text>
                 </View>
             </View>
 
             <View style={styles.quizContainer}>
-                <Text style={[styles.header, styles.boldText]}>Ajánlott kvízek</Text>
-                <Text style={styles.regularText}>Próbáld ki magad az alábbi kvízek egyikében!</Text>
+                <Text style={[styles.header, styles.boldText]}>Recommended tasks</Text>
+                <Text style={styles.regularText}>Do your daily tasks to earn rewards and badges!</Text>
             </View>
-            </View>
+        {/*<View>
+          <Progress.Bar progress={progress} width={200} height={20} />
+          <Button onPress={handlePress} title="Increase progress" />
+          <Text>Progress: {(progress * 100).toFixed(0)}%</Text>
+        </View>*/}
+        </SafeAreaView>
+
     )
 }
 
@@ -43,7 +70,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        backgroundColor: '#F5F5F5'
+        backgroundColor: '#EEB1EE',
     },
 
     topContainer: {
@@ -64,7 +91,8 @@ const styles = StyleSheet.create({
     },
 
     boldText: {
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: "#FFFFFF",
     },
 
     header: {
@@ -90,7 +118,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         alignContent: 'center',
         justifyContent: 'center',
-        marginVertical: 10
+        marginVertical: 10,
     },
 
     icons: {
@@ -107,7 +135,7 @@ const styles = StyleSheet.create({
     iconText: {
         textAlign: 'center',
         alignContent: 'center',
-        fontSize: 12
+        fontSize: 10
     },
 
     categoryCardImage: {

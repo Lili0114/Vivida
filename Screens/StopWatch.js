@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Pressable } from 'react-native';
+import { TouchableOpacity, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Stopwatch = () => {
   const [running, setRunning] = useState(false);
@@ -32,34 +33,45 @@ const Stopwatch = () => {
   };
 
   const handleSave = () => {
-    const timeInMinutes = Math.ceil(elapsedTime / (1000 * 60)); //kerekítés
-    console.log('Elapsed time:', timeInMinutes, 'minutes');
+    const timeInMinutes = (elapsedTime / (1000 * 60)).toFixed(1); //egy tizedesre kerekítve (float elapsedTime)
+    console.log('Elapsed time:', timeInMinutes, 'minute(s)');
     // todo: adatbázisba menteni
+  };  
+
+  const formatTime = () => {
+    const hours = Math.floor(elapsedTime / (1000 * 60 * 60));
+    const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+    const millis = Math.floor((elapsedTime % 1000) / 10);
+  
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(millis)}`;
   };
+  
+  const pad = (number) => {
+    return number < 10 ? '0' + number : number;
+  };
+
 
   return (
     <View style={styles.container}>
       <Text style={styles.timer}>{formatTime(elapsedTime)}</Text>
       <View style={styles.buttonContainer}>
-        <Button title={running ? 'Stop' : 'Start'} onPress={handleStartStop} />
-        <Button title="Reset" onPress={handleReset} />
-        <Button title="Save" onPress={handleSave} />
+        <GestureHandlerRootView>
+        <View style={styles.buttonRow}>
+          <Pressable style={styles.button}>
+            <Text style={styles.buttonText} onPress={handleStartStop}>{running ? 'Pause' : 'Start'}</Text>
+          </Pressable>
+          <Pressable style={styles.button}>
+            <Text style={styles.buttonText} onPress={handleReset}>Reset</Text>
+          </Pressable>
+          <Pressable style={styles.button}>
+            <Text style={styles.buttonText} onPress={handleSave} disabled={running}>Stop</Text>
+          </Pressable>
+        </View>
+        </GestureHandlerRootView>
       </View>
     </View>
   );
-};
-
-const formatTime = (milliseconds) => {
-  const totalSeconds = Math.floor(milliseconds / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  const millis = Math.floor((milliseconds % 1000) / 10);
-
-  return `${pad(minutes)}:${pad(seconds)}.${pad(millis)}`;
-};
-
-const pad = (number) => {
-  return number < 10 ? '0' + number : number;
 };
 
 export default Stopwatch;
@@ -71,12 +83,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   timer: {
-    fontSize: 24,
+    color: '#000000',
+    fontSize: 64,
+    fontWeight: '200',
     marginBottom: 16,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '80%',
+    justifyContent: 'space-evenly',
+    width: '90%',
+    alignSelf: 'center',
   },
+  button: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+    backgroundColor: 'violet',
+  },
+  buttonText: {
+    fontSize: 14,
+    color: '#FFFFFF'
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    alignSelf: 'center',
+  },
+
 });
