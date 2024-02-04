@@ -1,16 +1,12 @@
 import { Text, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { KeyboardAvoidingView } from 'react-native';
 import * as Progress from 'react-native-progress';
-import { auth } from '../Firebase';
-import { Card, Image } from 'react-native-elements';
-import { ScrollView } from 'react-native-gesture-handler';
 
 const Home = () => {
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View>
             <View style={styles.topContainer}>
                 <Text style={[styles.header, styles.boldText]}>Kezdőoldal</Text>
             </View>
@@ -38,21 +34,8 @@ const Home = () => {
             <View style={styles.quizContainer}>
                 <Text style={[styles.header, styles.boldText]}>Ajánlott kvízek</Text>
                 <Text style={styles.regularText}>Próbáld ki magad az alábbi kvízek egyikében!</Text>
-                <ScrollView
-                    horizontal='true'
-                    contentContainerStyle={styles.containerScrollView}>
-                    <Card containerStyle={styles.quizCards}>
-                        <Text style={styles.cardText}>Kvíz 1</Text>
-                    </Card>
-                    <Card containerStyle={styles.quizCards}>
-                        <Text>Kvíz 2</Text>
-                    </Card>
-                    <Card containerStyle={styles.quizCards}>
-                        <Text>Kvíz 3</Text>
-                    </Card>
-                </ScrollView>
             </View>
-        </SafeAreaView>
+            </View>
     )
 }
 

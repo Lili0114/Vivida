@@ -14,7 +14,7 @@ const Stopwatch = () => {
       intervalId = setInterval(() => {
         const currentTime = Date.now();
         setElapsedTime(currentTime - startTime);
-      }, 1000);
+      }, 30);
     } else {
       clearInterval(intervalId);
     }
@@ -32,8 +32,9 @@ const Stopwatch = () => {
   };
 
   const handleSave = () => {
-    // Itt elvégezheted az idő elmentését az adatbázisba
-    console.log('Elapsed time:', elapsedTime);
+    const timeInMinutes = Math.ceil(elapsedTime / (1000 * 60)); //kerekítés
+    console.log('Elapsed time:', timeInMinutes, 'minutes');
+    // todo: adatbázisba menteni
   };
 
   return (
@@ -49,16 +50,19 @@ const Stopwatch = () => {
 };
 
 const formatTime = (milliseconds) => {
-  const seconds = Math.floor(milliseconds / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const millis = Math.floor((milliseconds % 1000) / 10);
 
-  return `${pad(minutes)}:${pad(remainingSeconds)}`;
+  return `${pad(minutes)}:${pad(seconds)}.${pad(millis)}`;
 };
 
 const pad = (number) => {
   return number < 10 ? '0' + number : number;
 };
+
+export default Stopwatch;
 
 const styles = StyleSheet.create({
   container: {
@@ -76,5 +80,3 @@ const styles = StyleSheet.create({
     width: '80%',
   },
 });
-
-export default Stopwatch;

@@ -54,12 +54,6 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen
-          name="Home"
-          component={Tabs}
-          options={{
-            headerShown: false
-          }} />
         
         <Stack.Screen
           name="Welcome"
@@ -88,6 +82,13 @@ const App = () => {
               backgroundColor: '#fff'
             },
             headerTintColor: '#8562AC'
+          }} />
+        
+        <Stack.Screen
+          name="Home"
+          component={Tabs}
+          options={{
+            headerShown: false
           }} />
         
         <Stack.Screen

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-import { navigation } from "./Navigation/navigation";
 
-const Login = () => {
+const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -43,6 +42,7 @@ const Login = () => {
       <View style={styles.inputContainer}>
         <TextInput
           placeholder="Email"
+          placeholderTextColor={'#B7B7B7'}
           value={email}
           onChangeText={text => setEmail(text)}
           onChange={(e) => setEmail(e.target.value)}
@@ -50,6 +50,7 @@ const Login = () => {
         />
         <TextInput
           placeholder="Password"
+          placeholderTextColor={'#B7B7B7'}
           value={password}
           onChangeText={text => setPassword(text)}
           onChange={(e) => setPassword(e.target.value)}
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 7,
     padding: 13,
     fontSize: 17,
-    color: '#BBBBBB'
+    color: '#818181'
   },
 
   inputBottom: {

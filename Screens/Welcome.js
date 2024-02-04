@@ -1,11 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Image, KeyboardAvoidingView, Pressable } from 'react-native';
-import { navigation } from "./Navigation/navigation";
 
-const Welcome = () => {
+const Welcome = ({navigation}) => {
     return (
         <View style={styles.Container}>
             <View style={styles.TopContainer}>
+                <Image 
+                    source={require('../assets/images/logo.png')}
+                    style={styles.LogoStyle}/>
                 <Text style={styles.WelcomeText}>Lorem ipsum dolor sit amet, consectetur.</Text>
             </View>
             <View style={styles.ButtonContainer}>

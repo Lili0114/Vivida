@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image, KeyboardAvoidingView, Pressable, TextInput, Alert } from 'react-native';
-import { navigation } from "./Navigation/navigation";
 
-const Register = () => {
+const Register = ({navigation}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
@@ -47,6 +46,7 @@ const Register = () => {
                 <TextInput
                     style={styles.InputTop}
                     placeholder="Email"
+                    placeholderTextColor={'#B7B7B7'}
                     value={email}
                     onChangeText={setEmail}
                     onChange={(e) => setEmail(e.target.value)}
@@ -55,6 +55,7 @@ const Register = () => {
                 <TextInput
                     style={styles.Input}
                     placeholder="Felhasználó név"
+                    placeholderTextColor={'#B7B7B7'}
                     value={username}
                     onChangeText={setUsername}
                     onChange={(e) => setUsername(e.target.value)}
@@ -63,6 +64,7 @@ const Register = () => {
                 <TextInput
                     style={styles.Input}
                     placeholder="Jelszó"
+                    placeholderTextColor={'#B7B7B7'}
                     value={password}
                     onChangeText={setPassword}
                     onChange={(e) => setPassword(e.target.value)}
@@ -155,7 +157,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 7,
         padding: 13,
         fontSize: 17,
-        color: '#BBBBBB'
+        color: '#818181'
     },
 
     InputBottom: {
