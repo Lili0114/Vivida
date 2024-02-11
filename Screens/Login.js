@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { signInWithEmailAndPassword, signInWithFacebook, signInWithGoogle } from '../Services/FirebaseAuthService';
+import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import { LoginButton } from 'react-native-fbsdk';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const changePasswordVisibility = () => { 
+      setShowPassword(!showPassword);
+  };
 
   const AlertWindow = (error) => {
     Alert.alert("Hiba", error, [
-      {
-        text: 'Cancel',
-        onPress: () => console.log('Cancel Pressed'),
-        style: 'cancel',
-      },
-      {
-        text: 'OK',
-        onPress: () => console.log('OK Pressed'),
-      },
+        {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+        },
+        {
+            text: 'OK',
+            onPress: () => console.log('OK Pressed'),
+        },
     ]);
-  }
+}
 
-  /*const signIn = (e) => {
+  const signIn = (e) => {
     e.preventDefault();
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
@@ -34,13 +43,21 @@ const Login = ({navigation}) => {
         console.log(error);
         AlertWindow(error);
       });
-  }*/
+  }
 
+  const handleEmailLogin = () => {
+    signInWithEmailAndPassword('example@email.com', 'password123');
+  };
+
+  const handleFacebookLogin = () => {
+    signInWithFacebook();
+  };
 
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.inputContainer}>
         <TextInput
+          textContentType='emailAddress'
           placeholder="Email"
           placeholderTextColor={'#B7B7B7'}
           value={email}
@@ -48,15 +65,25 @@ const Login = ({navigation}) => {
           onChange={(e) => setEmail(e.target.value)}
           style={styles.inputTop}
         />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor={'#B7B7B7'}
-          value={password}
-          onChangeText={text => setPassword(text)}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.inputBottom}
-          secureTextEntry
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            textContentType='password'
+            placeholder="Password"
+            placeholderTextColor={'#B7B7B7'}
+            value={password}
+            onChangeText={text => setPassword(text)}
+            onChange={(e) => setPassword(e.target.value)}
+            style={styles.inputBottom}
+            secureTextEntry={!showPassword}
+          />
+          <MaterialCommunityIcons
+              name={showPassword ? 'eye-off' : 'eye'}
+              color="#8562AC"
+              size={20}
+              onPress={changePasswordVisibility}
+              style={styles.iconContainer}
+          />
+        </View>
       </View>
 
       <View style={styles.buttonContainer}>
@@ -66,7 +93,7 @@ const Login = ({navigation}) => {
           </Pressable>
         </TouchableOpacity>
         <TouchableOpacity>
-          <Pressable style={styles.passwordForgotButton} /*onPress={() => navigation.navigate('ForgotPassword')}*/>
+          <Pressable style={styles.passwordForgotButton} onPress={() => navigation.navigate('ForgotPassword')}>
             <Text style={styles.passwordForgotButtonText}>ELFELEJTETTEM A JELSZAVAM</Text>
           </Pressable>
         </TouchableOpacity>
@@ -89,10 +116,8 @@ const styles = StyleSheet.create({
   },
 
   inputContainer: {
-    //height: 500,
     margin: 15,
-    width: 350,
-    //flex: 1,
+    width: 300,
     flexDirection: 'column',
     justifyContent: 'center',
     marginLeft: 'auto',
@@ -120,7 +145,17 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 7,
     padding: 13,
     fontSize: 17,
-    color: '#BBBBBB'
+    color: '#BBBBBB',
+    paddingRight: 210,
+  },
+
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  iconContainer: {
+    paddingLeft: 5,
   },
 
   buttonContainer: {
@@ -131,7 +166,7 @@ const styles = StyleSheet.create({
   },
 
   loginButton: {
-    width: 350,
+    width: 300,
     margin: 4,
     padding: 13,
     backgroundColor: '#E4E4E4',
@@ -146,7 +181,7 @@ const styles = StyleSheet.create({
   },
 
   passwordForgotButton: {
-    width: 350,
+    width: 300,
     margin: 4,
     padding: 13,
     //backgroundColor: '#E4E4E4',
@@ -175,7 +210,7 @@ const styles = StyleSheet.create({
   },
 
   bottomText: {
-    width: 350,
+    width: 300,
     textAlign: 'center',
     marginLeft: 'auto',
     marginRight: 'auto',

@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image, KeyboardAvoidingView, Pressable, TextInput, Alert } from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 
 const Register = ({navigation}) => {
+
+    //Kötelező
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    const [points, setPoints] = useState(0);
-    const [profilePic, setProfilePic] = useState(null);
-    
-    /*const signUp = (e) => {
+    const [birthdate, setBirthdate] = useState(new Date());
+
+    //Opcionális
+    const [fullName, setFullName] = useState('');
+    const [profilePic, setProfilePic] = useState('');
+    const [gender, setGender] = useState();
+    const [height, setHeight] = useState(0.0);
+    const [weight, setWeight] = useState(0.0);
+
+    const signUp = (e) => {
         e.preventDefault();
         createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
@@ -22,9 +31,9 @@ const Register = ({navigation}) => {
                 navigation.navigate("Login");
             }).catch((error) => {
                 console.log(error);
-                //AlertWindow(error);
+                AlertWindow(error);
             });
-    }*/
+    }
 
     const AlertWindow = (error) => {
         Alert.alert("Hiba", error, [
@@ -45,7 +54,7 @@ const Register = ({navigation}) => {
             <View style={styles.InputContainer}>
                 <TextInput
                     style={styles.InputTop}
-                    placeholder="Email"
+                    placeholder="Email *"
                     placeholderTextColor={'#B7B7B7'}
                     value={email}
                     onChangeText={setEmail}
@@ -54,7 +63,7 @@ const Register = ({navigation}) => {
                 
                 <TextInput
                     style={styles.Input}
-                    placeholder="Felhasználó név"
+                    placeholder="Username *"
                     placeholderTextColor={'#B7B7B7'}
                     value={username}
                     onChangeText={setUsername}
@@ -63,21 +72,64 @@ const Register = ({navigation}) => {
 
                 <TextInput
                     style={styles.Input}
-                    placeholder="Jelszó"
+                    placeholder="Password *"
                     placeholderTextColor={'#B7B7B7'}
                     value={password}
                     onChangeText={setPassword}
                     onChange={(e) => setPassword(e.target.value)}
                     secureTextEntry
                 />
-                {/*}
+
+                <TextInput
+                    style={styles.Input}
+                    placeholder="Full name"
+                    placeholderTextColor={'#B7B7B7'}
+                    value={fullName}
+                    onChangeText={setFullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                />
+
+                <Picker selectedValue={gender} onValueChange={(itemValue, itemIndex) => setGender(itemValue) /*kicsit szofisztikáltabban */}>
+                    <Picker.Item label="Female" value="female" color="#B7B7B7"/>
+                    <Picker.Item label="Male" value="male" color="#B7B7B7"/>
+                    <Picker.Item label="Prefer not to say" value=" " color="#B7B7B7"/>
+                </Picker>
+
+                <TextInput
+                    style={styles.Input}
+                    placeholder="Birthdate * --> datetimepicker kell"
+                    placeholderTextColor={'#B7B7B7'}
+                    value={birthdate}
+                    onChangeText={setBirthdate}
+                    onChange={(e) => setBirthdate(e.target.value)}
+                />
+
+                <TextInput
+                    style={styles.Input}
+                    placeholder="Height"
+                    placeholderTextColor={'#B7B7B7'}
+                    value={height}
+                    onChangeText={setHeight}
+                    onChange={(e) => setHeight(e.target.value)}
+                />
+
+                <TextInput
+                    style={styles.Input}
+                    placeholder="Weight"
+                    placeholderTextColor={'#B7B7B7'}
+                    value={weight}
+                    onChangeText={setWeight}
+                    onChange={(e) => setWeight(e.target.value)}
+                />
+
                 <TextInput
                     style={styles.InputBottom}
-                    placeholder="Jelszó újra"
-                    value={passwordAgain}
-                    onChangeText={setChangePasswordAgain}
-                    secureTextEntry
-                />*/}
+                    placeholder="Profile picture --> képkiválasztó kell (image/document-picker)"
+                    placeholderTextColor={'#B7B7B7'}
+                    value={profilePic}
+                    onChangeText={setProfilePic}
+                    onChange={(e) => setProfilePic(e.target.value)}
+                />
             </View>
 
             <View style={styles.ButtonContainer}>
@@ -121,13 +173,14 @@ const styles = StyleSheet.create({
     Container: {
         flex: 1,
         flexDirection: "column",
-        backgroundColor: '#fff'
+        backgroundColor: '#fff',
+        height: 'auto'
     },
 
     InputContainer: {
         //height: 500,
         margin: 15,
-        width: 350,
+        width: 300,
         //flex: 1,
         flexDirection: 'column',
         justifyContent: 'center',
@@ -146,8 +199,9 @@ const styles = StyleSheet.create({
         borderColor: '#C9C9C9',
         //borderRadius: 7,
         padding: 13,
-        fontSize: 17,
-        color: '#BBBBBB'
+        fontSize: 14,
+        color: '#BBBBBB',
+        height: 40,
     },
 
     InputTop: {
@@ -156,8 +210,9 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 7,
         borderTopRightRadius: 7,
         padding: 13,
-        fontSize: 17,
-        color: '#818181'
+        fontSize: 14,
+        color: '#818181',
+        height: 40,
     },
 
     InputBottom: {
@@ -166,8 +221,9 @@ const styles = StyleSheet.create({
         borderBottomLeftRadius: 7,
         borderBottomRightRadius: 7,
         padding: 13,
-        fontSize: 17,
-        color: '#BBBBBB'
+        fontSize: 14,
+        color: '#BBBBBB',
+        height: 40,
     },
 
     ButtonContainer: {
@@ -178,7 +234,7 @@ const styles = StyleSheet.create({
     },
 
     RegisterButton: {
-        width: 350,
+        width: 300,
         margin: 4,
         padding: 13,
         backgroundColor: '#E4E4E4',
@@ -193,7 +249,7 @@ const styles = StyleSheet.create({
     },
 
     LoginButton: {
-        width: 350,
+        width: 300,
         margin: 4,
         padding: 13,
         backgroundColor: '#8562AC',
@@ -214,18 +270,12 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end'
     },
 
-    LogoStyle: {
-        width: 150,
-        height: 150,
-        marginLeft: 'auto',
-        marginRight: 'auto'
-    },
-
     BottomText: {
-        width: 350,
+        width: 300,
         textAlign: 'center',
         marginLeft: 'auto',
         marginRight: 'auto',
         color: '#6D6D6D'
-    }
+    },
+
 })

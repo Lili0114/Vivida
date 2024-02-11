@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, Platform } from 'react-native';
 //import * as ImagePicker from 'expo-image-picker'   ---> helyette:  react-native-image-picker vagy a react-native-document-picker
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { navigation } from "./Navigation/navigation";
 
 const Account = () => {
   const [userId, setUserId] = useState('');
