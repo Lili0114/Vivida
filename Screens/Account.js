@@ -2,6 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, Platform } from 'react-native';
 //import * as ImagePicker from 'expo-image-picker'   ---> helyette:  react-native-image-picker vagy a react-native-document-picker
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { auth } from '../Services/firebase';
+import { getAuth, updateProfile } from "firebase/auth";
+import 'firebase/database';
+import 'firebase/storage';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import { db } from '../Services/firebase';
+import { doc, getDoc, collection } from "firebase/firestore";
 
 const Account = () => {
   const [userId, setUserId] = useState('');
@@ -10,9 +19,22 @@ const Account = () => {
   const [points, setPoints] = useState(0);
   const [profilePic, setProfilePic] = useState(null);
   const [numberCurriculumDone, setNumberCurriculumDone] = useState(0);
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(null);
 
-  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const currentUserDoc = doc(collection(db, "users"), auth.currentUser.uid);
+      const userDocSnap = await getDoc(currentUserDoc);
+
+      if (userDocSnap.exists()) {
+        setUserData(userDocSnap.data());
+      } else {
+        console.log("A felhasználó dokumentuma nem található.");
+      }
+    };
+
+    fetchData();
+  }, []);
 
   /*const auth = getAuth();
 
@@ -65,7 +87,7 @@ const Account = () => {
     auth.signOut().then(() => {
       console.log('User signed out successfully!');
 
-      navigation.navigate('Login');
+      navigation.navigate('Welcome');
     })
     .catch((error) => {
       console.log(error);
@@ -81,7 +103,7 @@ const Account = () => {
             <Image
               style={styles.profilePicture}
               source={{ uri: profilePic }} />
-            <Text style={styles.usernameText}>{username}</Text>
+            <Text style={styles.usernameText}>{userData ? `${userData.username}` : "Betöltés..."}</Text>
             <Text style={styles.text}>{points} pont</Text>
           </View>
           <View style={styles.buttonContainer}>
@@ -93,7 +115,7 @@ const Account = () => {
         </View>
 
         <View style={styles.bottomContainer}>
-          <Text style={styles.text}>Email cím: {email}</Text>
+          <Text style={styles.text}>Email cím: {auth.currentUser.email}</Text>
           <Text style={styles.text} marginBottom={10}>Kitöltött tesztek száma: {numberCurriculumDone}</Text>
 
           <View style={styles.buttonContainer}>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "416030693399",
+    "project_id": "vivida-57f19",
+    "storage_bucket": "vivida-57f19.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416030693399:android:2b3603eb63ef6b2de26452",
+        "android_client_info": {
+          "package_name": "com.vivida"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATplr6mJFq3ToEMGWdsInnl6Ynspf8JCk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

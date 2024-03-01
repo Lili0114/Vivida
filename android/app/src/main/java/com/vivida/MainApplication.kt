@@ -11,6 +11,9 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.flipper.ReactNativeFlipper
 import com.facebook.soloader.SoLoader
+import com.facebook.reactnative.androidsdk.FBSDKPackage
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 
 class MainApplication : Application(), ReactApplication {
 
@@ -18,8 +21,9 @@ class MainApplication : Application(), ReactApplication {
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> =
             PackageList(this).packages.apply {
-              // Packages that cannot be autolinked yet can be added manually here, for example:
-              // add(MyReactNativePackage())
+                    if (none { it is FBSDKPackage }) {
+                        add(FBSDKPackage())
+                    }
             }
 
         override fun getJSMainModuleName(): String = "index"
@@ -32,6 +36,15 @@ class MainApplication : Application(), ReactApplication {
 
   override val reactHost: ReactHost
     get() = getDefaultReactHost(this.applicationContext, reactNativeHost)
+  
+  private fun setupFirebase() {
+      val options = FirebaseOptions.Builder()
+          .setApplicationId("1:416030693399:android:2b3603eb63ef6b2de26452")
+          .setApiKey("AIzaSyDQVpGsmqRuq1sf2lL_Tup_cU_JE0ig4Q8")
+          .setProjectId("vivida-57f19")
+          .build()
+      FirebaseApp.initializeApp(this, options, "secondary")
+  }
 
   override fun onCreate() {
     super.onCreate()
@@ -41,5 +54,6 @@ class MainApplication : Application(), ReactApplication {
       load()
     }
     ReactNativeFlipper.initializeFlipper(this, reactNativeHost.reactInstanceManager)
+    setupFirebase()
   }
 }

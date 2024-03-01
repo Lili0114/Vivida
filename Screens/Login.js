@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-import { signInWithEmailAndPassword, signInWithFacebook, signInWithGoogle } from '../Services/FirebaseAuthService';
 import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
-import { LoginButton } from 'react-native-fbsdk';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+//import auth from '@react-native-firebase/auth';
+//import { LoginManager, AccessToken, LoginButton } from 'react-native-fbsdk';
+import { auth, db } from '../Services/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import 'firebase/firestore';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -15,7 +18,7 @@ const Login = ({navigation}) => {
   };
 
   const AlertWindow = (error) => {
-    Alert.alert("Hiba", error, [
+    Alert.alert("Error", error, [
         {
             text: 'Cancel',
             onPress: () => console.log('Cancel Pressed'),
@@ -26,27 +29,62 @@ const Login = ({navigation}) => {
             onPress: () => console.log('OK Pressed'),
         },
     ]);
-}
-
-  const signIn = (e) => {
-    e.preventDefault();
-    signInWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        console.log(userCredential);
-        //const { uid, email } = userCredential.user;
-        //saveUserData(uid, email);
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Home' }],
-        });
-      }).catch((error) => {
-        console.log(error);
-        AlertWindow(error);
-      });
   }
 
-  const handleEmailLogin = () => {
-    signInWithEmailAndPassword('example@email.com', 'password123');
+  /*async function FacebookSignIn() {
+    let cred = await onFacebookButtonPress();
+    console.log("cred: ", cred);
+  }
+  
+  async function onFacebookButtonPress() {
+    // Attempt login with permissions
+    const result = await LoginManager.logInWithPermissions(['public_profile', 'email']);
+  
+    if (result.isCancelled) {
+      throw 'User cancelled the login process';
+    }
+  
+    // Once signed in, get the users AccessToken
+    const data = await AccessToken.getCurrentAccessToken();
+  
+    if (!data) {
+      throw 'Something went wrong obtaining access token';
+    }
+  
+    // Create a Firebase credential with the AccessToken
+    const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
+  
+    // Sign-in the user with the credential
+    return auth().signInWithCredential(facebookCredential);
+  }
+  <View>
+      <LoginButton
+        onLoginFinished={(error, result) => {
+          if (error) {
+            console.log('Facebook login error:', error);
+          } else if (result.isCancelled) {
+            console.log('Facebook login cancelled.');
+          } else {
+            FacebookSignIn();
+          }
+        }}
+        onLogoutFinished={() => console.log('Facebook logout finished.')}
+      />
+      </View>
+  
+  */
+  
+  const signIn = async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      console.log('Sikeres bejelentkezés:', user.email);
+      navigation.navigate('HomePage');
+      return user;
+    } catch (error) {
+      console.error('Bejelentkezési hiba:', error.message);
+      throw error;
+    }
   };
 
   const handleFacebookLogin = () => {
@@ -88,7 +126,7 @@ const Login = ({navigation}) => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity>
-          <Pressable style={styles.loginButton} onPress={() => navigation.navigate('HomePage')} /*onPress={signIn}*/>
+          <Pressable style={styles.loginButton} onPress={() => signIn(email,password)}>
             <Text style={styles.loginButtonText}>BEJELENTKEZÉS</Text>
           </Pressable>
         </TouchableOpacity>

@@ -1,8 +1,10 @@
-import { Text, StyleSheet, View, Animated } from 'react-native';
+import { Text, StyleSheet, View, Animated, Pressable } from 'react-native';
 import React, { Component, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Progress from 'react-native-progress';
 import { Button, Image } from 'react-native-elements';
+import { db } from '../Services/firebase';
+import { collection, getDocs } from "firebase/firestore";
 
 const Home = () => {
     const [progress, setProgress] = useState(0);
@@ -18,6 +20,14 @@ const Home = () => {
       setProgress((prevProgress) => prevProgress + 0.1);
     };
 
+    async function listUsers() {
+        const collectionRef = collection(db, "users");
+        const snapshot = await getDocs(collectionRef);
+        snapshot.forEach(doc => {
+            console.log(doc.id, " => ", doc.data());
+        });
+    }
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
@@ -27,7 +37,7 @@ const Home = () => {
             <View style={styles.progressContainer}>
                 <Text style={styles.regularText}>Take a look at how much progress you've made:</Text>
                 <View style={styles.progressBar}>
-                    <Animated.View style={{ ...StyleSheet.absoluteFill, borderRadius: 10, backgroundColor: "violet", width: "70%" }}/>
+                    <Animated.View style={{ ...StyleSheet.absoluteFill, borderRadius: 10, backgroundColor: "#1989DF", width: "70%" }}/>
                 </View>
             </View>
 
@@ -70,7 +80,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        backgroundColor: '#EEB1EE',
+        backgroundColor: '#ADCEE8',
     },
 
     topContainer: {
@@ -109,7 +119,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 15,
         backgroundColor: '#fff',
         borderWidth: 2,
-        borderColor: '#C9C9C9'
+        borderColor: '#ADCEE8'
     },
 
     iconsContainer: {
