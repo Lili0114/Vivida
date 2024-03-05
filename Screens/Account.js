@@ -13,12 +13,12 @@ import { db } from '../Services/firebase';
 import { doc, getDoc, collection } from "firebase/firestore";
 
 const Account = () => {
-  const [userId, setUserId] = useState('');
+  const [uId, setUId] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [points, setPoints] = useState(0);
   const [profilePic, setProfilePic] = useState(null);
-  const [numberCurriculumDone, setNumberCurriculumDone] = useState(0);
+  const [rewardNumber, setRewardNumber] = useState(0);
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
@@ -84,7 +84,7 @@ const Account = () => {
   };
 
   const handleLogout = () => {
-    auth.signOut().then(() => {
+    auth.signOut().then((navigation) => {
       console.log('User signed out successfully!');
 
       navigation.navigate('Welcome');
@@ -116,7 +116,7 @@ const Account = () => {
 
         <View style={styles.bottomContainer}>
           <Text style={styles.text}>Email cím: {auth.currentUser.email}</Text>
-          <Text style={styles.text} marginBottom={10}>Kitöltött tesztek száma: {numberCurriculumDone}</Text>
+          <Text style={styles.text} marginBottom={10}>Kitöltött tesztek száma: {rewardNumber}</Text>
 
           <View style={styles.buttonContainer}>
             <Pressable style={styles.saveButton}>
@@ -127,8 +127,8 @@ const Account = () => {
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity>
-            <Pressable style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutText}>Kijelentkezés</Text>
+            <Pressable onPress={handleLogout}>
+              <Text style={styles.text}>Kijelentkezés</Text>
             </Pressable>
           </TouchableOpacity>
         </View>
@@ -239,4 +239,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#C9C9C9'
   }
+
+
 })

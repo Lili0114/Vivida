@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, Image, KeyboardAvoidingView, Pressable, TextInput, Alert } from 'react-native';
 import {Picker} from '@react-native-picker/picker';
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth, db } from '../Services/firebase';
+import { doc, setDoc, collection, addDoc } from "firebase/firestore";
 
 const Register = ({navigation}) => {
 
@@ -8,7 +11,7 @@ const Register = ({navigation}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    const [birthdate, setBirthdate] = useState(new Date());
+    const [birthdate, setBirthdate] = useState(''); //new Date()
 
     //Opcionális
     const [fullName, setFullName] = useState('');
@@ -17,26 +20,44 @@ const Register = ({navigation}) => {
     const [height, setHeight] = useState(0.0);
     const [weight, setWeight] = useState(0.0);
 
-    const signUp = (e) => {
-        e.preventDefault();
+    const signUp = (email, password, username, birthdate, fullName, profilePic, gender, height, weight) => {
         createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
+            return updateProfile(userCredential.user, {
+                displayName: username,
+                photoURL: profilePic
+            }).then(() => {
+                return userCredential;
+            });
+        })
+        .then((userCredential) => {
             console.log(userCredential);
-                const newUser = {
-                    uID: userCredential.uID,
-                    email: userCredential.email,
-                    //username: userCredential.username
-                };
-                addDoc(doc(db, "user"), newUser);
-                navigation.navigate("Login");
-            }).catch((error) => {
-                console.log(error);
+            const newUser = {
+                uID: userCredential.user.uid,
+                email: userCredential.user.email,
+                username: username,
+                birthdate: birthdate,
+                fullName: fullName,
+                profilePic: profilePic,
+                gender: gender,
+                height: height,
+                weight: weight
+            };
+            
+            setDoc(doc(db, "users", newUser.uID), newUser)
+            .then(() => {
+                console.log("User saved successfully!");
+                navigation.navigate('Login');
+            })
+            .catch((error) => {
+                console.error("Error saving user: ", error);
                 AlertWindow(error);
             });
+        });
     }
 
     const AlertWindow = (error) => {
-        Alert.alert("Hiba", error, [
+        Alert.alert("Hiba", error.message, [
             {
                 text: 'Cancel',
                 onPress: () => console.log('Cancel Pressed'),
@@ -59,6 +80,7 @@ const Register = ({navigation}) => {
                     value={email}
                     onChangeText={setEmail}
                     onChange={(e) => setEmail(e.target.value)}
+                    keyboardType="email-address"
                 />
                 
                 <TextInput
@@ -108,18 +130,20 @@ const Register = ({navigation}) => {
                     style={styles.Input}
                     placeholder="Height"
                     placeholderTextColor={'#B7B7B7'}
-                    value={height}
-                    onChangeText={setHeight}
+                    value={height.toString()}
+                    onChangeText={(value) => setHeight(Number(value))}
                     onChange={(e) => setHeight(e.target.value)}
+                    keyboardType="numeric"
                 />
 
                 <TextInput
                     style={styles.Input}
                     placeholder="Weight"
                     placeholderTextColor={'#B7B7B7'}
-                    value={weight}
-                    onChangeText={setWeight}
+                    value={weight.toString()}
+                    onChangeText={(value) => setWeight(Number(value))}
                     onChange={(e) => setWeight(e.target.value)}
+                    keyboardType="numeric"
                 />
 
                 <TextInput
@@ -134,7 +158,7 @@ const Register = ({navigation}) => {
 
             <View style={styles.ButtonContainer}>
                 <TouchableOpacity>
-                    <Pressable style={styles.RegisterButton} /*onPress={signUp}*/>
+                    <Pressable style={styles.RegisterButton} onPress={signUp(email, password, username, birthdate, fullName, profilePic, gender, height, weight)}>
                         <Text style={styles.RegisterButtonText}>REGISZTRÁCIÓ</Text>
                     </Pressable>
                     <Pressable style={styles.LoginButton} onPress={() => navigation.navigate('Login')}>
