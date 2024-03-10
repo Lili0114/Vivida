@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, Platform } from 'react-native';
-//import * as ImagePicker from 'expo-image-picker'   ---> helyette:  react-native-image-picker vagy a react-native-document-picker
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../Services/firebase';
 import { getAuth, updateProfile } from "firebase/auth";
@@ -12,7 +11,7 @@ import 'firebase/compat/firestore';
 import { db } from '../Services/firebase';
 import { doc, getDoc, collection } from "firebase/firestore";
 
-const Account = () => {
+const Account = (navigation) => {
   const [uId, setUId] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -52,41 +51,15 @@ const Account = () => {
     return unsubscribe;
   }, []);*/
 
-  /*const handlePickImage = async () => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        alert('Szükséges az engedély megadása, hogy képet feltölthess!');
-        return;
-      }
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setProfilePic(result.uri)
-      updateProfile(auth.currentUser, {
-        photoURL: setProfilePic(result.uri)
-      }).then(() => {
-        console.log('Sikeres');
-      }).catch((error) => {
-        console.log('Sikertelen')
-      });
-    }
-  };*/
 
   const handleSave = () => {
     console.log(`Username: ${username}, Email: ${email}, Points: ${points}, Profile Pic: ${profilePic}`);
   };
 
   const handleLogout = () => {
-    auth.signOut().then((navigation) => {
+    console.log("megnyomtam");
+    auth.signOut().then(() => {
       console.log('User signed out successfully!');
-
       navigation.navigate('Welcome');
     })
     .catch((error) => {
@@ -100,9 +73,9 @@ const Account = () => {
 
         <View style={styles.topContainer}>
           <View style={{ alignItems: 'center', marginBottom: 10 }}>
-            <Image
+            {/*<Image
               style={styles.profilePicture}
-              source={{ uri: profilePic }} />
+  source={{ uri: profilePic }} />*/}
             <Text style={styles.usernameText}>{userData ? `${userData.username}` : "Betöltés..."}</Text>
             <Text style={styles.text}>{points} pont</Text>
           </View>
@@ -120,18 +93,19 @@ const Account = () => {
 
           <View style={styles.buttonContainer}>
             <Pressable style={styles.saveButton}>
-              <Text style={styles.btnText} onPress={handleSave}>Mentés</Text>
+              <Text style={styles.btnText} onPress={() => handleSave}>Mentés</Text>
             </Pressable>
           </View>
         </View>
-
+  
         <View style={styles.buttonContainer}>
           <TouchableOpacity>
-            <Pressable onPress={handleLogout}>
-              <Text style={styles.text}>Kijelentkezés</Text>
+            <Pressable style={styles.uploadButton} onPress={() => handleLogout}>
+              <Text style={styles.uploadText}>Kijelentkezés</Text>
             </Pressable>
           </TouchableOpacity>
         </View>
+
       </KeyboardAvoidingView>
     </SafeAreaView>
 

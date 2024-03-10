@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+//import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-//import auth from '@react-native-firebase/auth';
 //import { LoginManager, AccessToken, LoginButton } from 'react-native-fbsdk';
 import { auth, db } from '../Services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -96,21 +95,20 @@ const Login = ({navigation}) => {
       <View style={styles.inputContainer}>
         <TextInput
           textContentType='emailAddress'
-          placeholder="Email"
+          placeholder="Email cím"
           placeholderTextColor={'#B7B7B7'}
           value={email}
           onChangeText={text => setEmail(text)}
-          onChange={(e) => setEmail(e.target.value)}
           style={styles.inputTop}
+          keyboardType='email-address'
         />
         <View style={styles.passwordContainer}>
           <TextInput
             textContentType='password'
-            placeholder="Password"
+            placeholder="Jelszó"
             placeholderTextColor={'#B7B7B7'}
             value={password}
             onChangeText={text => setPassword(text)}
-            onChange={(e) => setPassword(e.target.value)}
             style={styles.inputBottom}
             secureTextEntry={!showPassword}
           />
@@ -184,7 +182,7 @@ const styles = StyleSheet.create({
     padding: 13,
     fontSize: 17,
     color: '#BBBBBB',
-    paddingRight: 210,
+    paddingRight: 227,
   },
 
   passwordContainer: {

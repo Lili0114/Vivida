@@ -31,11 +31,11 @@ const Home = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
-                <Text style={[styles.header, styles.boldText]}>Home</Text>
+                <Text style={[styles.header, styles.boldText]}>Kezdőlap</Text>
             </View>
 
             <View style={styles.progressContainer}>
-                <Text style={styles.regularText}>Take a look at how much progress you've made:</Text>
+                <Text style={styles.regularText}>Tekintsd meg mennyit haladtál:</Text>
                 <View style={styles.progressBar}>
                     <Animated.View style={{ ...StyleSheet.absoluteFill, borderRadius: 10, backgroundColor: "#1989DF", width: "70%" }}/>
                 </View>
@@ -46,25 +46,25 @@ const Home = () => {
                     <Image 
                         source={require('../assets/images/triangle.png')}
                         style={styles.categoryCardImageInCaseOfLongText}/>
-                    <Text style={styles.iconText}>Daily {"\n"}measurements</Text>
+                    <Text style={styles.iconText}>Napi {"\n"}mérések</Text>
                 </View>
                 <View style={styles.icons}>
                     <Image 
                         source={require('../assets/images/triangle.png')}
                         style={styles.categoryCardImage}/>
-                    <Text style={styles.iconText}>Statistics</Text>
+                    <Text style={styles.iconText}>Statisztikák</Text>
                 </View>
                 <View style={styles.icons}>
                     <Image 
                         source={require('../assets/images/triangle.png')}
                         style={styles.categoryCardImage}/>
-                    <Text style={styles.iconText}>Other</Text>
+                    <Text style={styles.iconText}>Egyéb</Text>
                 </View>
             </View>
 
             <View style={styles.quizContainer}>
-                <Text style={[styles.header, styles.boldText]}>Recommended tasks</Text>
-                <Text style={styles.regularText}>Do your daily tasks to earn rewards and badges!</Text>
+                <Text style={[styles.header, styles.boldText]}>Ajánlott feladatok</Text>
+                <Text style={styles.regularText}>Végezd el a napi feladatokat, hogy minél több jutalmat és jelvényt szerezhess!</Text>
             </View>
         {/*<View>
           <Progress.Bar progress={progress} width={200} height={20} />

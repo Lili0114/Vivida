@@ -59,13 +59,13 @@ const Stopwatch = () => {
         <GestureHandlerRootView>
         <View style={styles.buttonRow}>
           <Pressable style={styles.button}>
-            <Text style={styles.buttonText} onPress={handleStartStop}>{running ? 'Pause' : 'Start'}</Text>
+            <Text style={styles.buttonText} onPress={handleStartStop}>{running ? 'Szünet' : 'Indít'}</Text>
           </Pressable>
           <Pressable style={styles.button}>
-            <Text style={styles.buttonText} onPress={handleReset}>Reset</Text>
+            <Text style={styles.buttonText} onPress={handleReset}>Újraindít</Text>
           </Pressable>
           <Pressable style={styles.button}>
-            <Text style={styles.buttonText} onPress={handleSave} disabled={running}>Stop</Text>
+            <Text style={styles.buttonText} onPress={handleSave} disabled={running}>Megállít</Text>
           </Pressable>
         </View>
         </GestureHandlerRootView>

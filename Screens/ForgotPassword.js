@@ -1,11 +1,10 @@
 import { View, Text, SafeAreaView, TextInput, TouchableOpacity, Pressable, StyleSheet, Image } from 'react-native';
 import React, { useState } from 'react';
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import {auth} from '../Services/firebase';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
-
-    const auth = getAuth();
 
     const sendEmail = (e) => {
         //console.log('woohoo');
@@ -26,7 +25,6 @@ const ForgotPassword = () => {
                     placeholder="Email"
                     value={email}
                     onChangeText={text => setEmail(text)}
-                    onChange={(e) => setEmail(e.target.value)}
                     style={styles.inputTop}
                 />
             </View>

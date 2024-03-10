@@ -2,13 +2,13 @@ import { Text, StyleSheet, View } from 'react-native';
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const Plans = () => {
+const Goals = () => {
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
-                <Text style={[styles.header, styles.boldText]}>Edzéstervek</Text>
-                <Text style={styles.regularText}>Válassz a tervek közül vagy készíts sajátot!</Text>
+                <Text style={[styles.header, styles.boldText]}>Célok</Text>
+                <Text style={styles.regularText}>Tűzz ki célokat, és szerezz jelvényeket!</Text>
             </View>
         </SafeAreaView>
     )
@@ -115,4 +115,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export default Plans
+export default Goals
