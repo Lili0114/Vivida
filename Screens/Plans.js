@@ -35,7 +35,8 @@ const styles = StyleSheet.create({
 
     regularText: {
         fontSize: 15,
-        paddingHorizontal: 15
+        paddingHorizontal: 15,
+        color: "#FFFFFF",
     },
 
     boldText: {

@@ -7,14 +7,13 @@ const ForgotPassword = () => {
     const [email, setEmail] = useState('');
 
     const sendEmail = (e) => {
-        //console.log('woohoo');
         sendPasswordResetEmail(auth, email)
             .then(() => {
-                console.log('Email küldve woohoo');
+                console.log('Email elküldve!');
             })
             .catch((error) => {
-                const errorCode = error.code;
                 const errorMessage = error.message;
+                console.log(errorMessage);
             })
     }
 
@@ -22,7 +21,7 @@ const ForgotPassword = () => {
         <SafeAreaView style={styles.container}>
             <View style={styles.inputContainer}>
                 <TextInput
-                    placeholder="Email"
+                    placeholder="Add meg az email címed"
                     value={email}
                     onChangeText={text => setEmail(text)}
                     style={styles.inputTop}
@@ -30,8 +29,8 @@ const ForgotPassword = () => {
             </View>
             <View style={styles.buttonContainer}>
                 <TouchableOpacity>
-                    <Pressable style={styles.loginButton} onPress={sendEmail}>
-                        <Text style={styles.loginButtonText}>KÜLDÉS</Text>
+                    <Pressable style={styles.button} onPress={sendEmail}>
+                        <Text style={styles.buttonText}>KÜLDÉS</Text>
                     </Pressable>
                 </TouchableOpacity>
             </View>
@@ -85,7 +84,7 @@ const styles = StyleSheet.create({
         marginRight: 'auto'
       },
     
-      loginButton: {
+      button: {
         width: 350,
         margin: 4,
         padding: 13,
@@ -93,24 +92,9 @@ const styles = StyleSheet.create({
         borderRadius: 7
       },
     
-      loginButtonText: {
+      buttonText: {
         fontSize: 18,
         color: '#818181',
-        marginLeft: 'auto',
-        marginRight: 'auto'
-      },
-    
-      passwordForgotButton: {
-        width: 350,
-        margin: 4,
-        padding: 13,
-        //backgroundColor: '#E4E4E4',
-        //borderRadius: 7
-      },
-    
-      passwordForgotButtonText: {
-        fontSize: 18,
-        color: '#8562AC',
         marginLeft: 'auto',
         marginRight: 'auto'
       },
@@ -127,13 +111,5 @@ const styles = StyleSheet.create({
         height: 150,
         marginLeft: 'auto',
         marginRight: 'auto'
-      },
-    
-      bottomText: {
-        width: 350,
-        textAlign: 'center',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        color: '#6D6D6D'
       }
 })

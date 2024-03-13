@@ -12,6 +12,8 @@ import Stopwatch from './Screens/StopWatch';
 import Plans from './Screens/Plans';
 import ForgotPassword from './Screens/ForgotPassword';
 import Goals from './Screens/Goals';
+import StepCounter from './Screens/StepCounter';
+import Rewards from './Screens/Rewards';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -23,6 +25,7 @@ function Tabs() {
       <Tab.Screen name='Tervek' component={Plans} options={{headerShown: false}} />
       <Tab.Screen name='Goals' component={Goals} options={{headerShown: false}} />
       <Tab.Screen name='Stopper' component={Stopwatch} options={{ headerShown: false }} />
+      <Tab.Screen name='Jutalmak' component={Rewards} options={{headerShown: false}} />
       <Tab.Screen name='Profil' component={Account} options={{ headerShown: false }} />
     </Tab.Navigator>
   );
@@ -69,14 +72,21 @@ const App = () => {
             },
             headerTintColor: '#8562AC'
           }} />
-        
+          
+        <Stack.Screen
+          name="StepCounter"
+          component={StepCounter}
+          options={{
+            headerShown: false
+          }} />
+
         <Stack.Screen
           name="HomePage"
           component={Tabs}
           options={{
             headerShown: false
           }} />
-        
+
         <Stack.Screen
           name="Plans"
           component={Plans}
@@ -98,6 +108,13 @@ const App = () => {
             headerShown: false
           }} />
 
+        <Stack.Screen
+          name="Rewards"
+          component={Rewards}
+          options={{
+            headerShown: false
+          }} />
+        
         <Stack.Screen
           name="Account"
           component={Account}

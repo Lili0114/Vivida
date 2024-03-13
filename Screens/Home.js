@@ -1,10 +1,10 @@
 import { Text, StyleSheet, View, Animated, Pressable } from 'react-native';
 import React, { Component, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Progress from 'react-native-progress';
 import { Button, Image } from 'react-native-elements';
 import { db } from '../Services/firebase';
 import { collection, getDocs } from "firebase/firestore";
+import StepCounter from './StepCounter';
 
 const Home = () => {
     const [progress, setProgress] = useState(0);
@@ -34,12 +34,7 @@ const Home = () => {
                 <Text style={[styles.header, styles.boldText]}>Kezdőlap</Text>
             </View>
 
-            <View style={styles.progressContainer}>
-                <Text style={styles.regularText}>Tekintsd meg mennyit haladtál:</Text>
-                <View style={styles.progressBar}>
-                    <Animated.View style={{ ...StyleSheet.absoluteFill, borderRadius: 10, backgroundColor: "#1989DF", width: "70%" }}/>
-                </View>
-            </View>
+            <StepCounter/>
 
             <View style={styles.iconsContainer}>
                 <View style={styles.icons}>
@@ -97,7 +92,8 @@ const styles = StyleSheet.create({
 
     regularText: {
         fontSize: 15,
-        paddingHorizontal: 15
+        paddingHorizontal: 15,
+        color: "#FFFFFF",
     },
 
     boldText: {
@@ -145,7 +141,8 @@ const styles = StyleSheet.create({
     iconText: {
         textAlign: 'center',
         alignContent: 'center',
-        fontSize: 10
+        fontSize: 10,
+        color: "#FFFFFF",
     },
 
     categoryCardImage: {

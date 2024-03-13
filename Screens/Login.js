@@ -16,19 +16,30 @@ const Login = ({navigation}) => {
       setShowPassword(!showPassword);
   };
 
-  const AlertWindow = (error) => {
-    Alert.alert("Error", error, [
-        {
-            text: 'Cancel',
-            onPress: () => console.log('Cancel Pressed'),
-            style: 'cancel',
-        },
+  function AlertWindow (message) {
+    Alert.alert("Hiba", message, [
         {
             text: 'OK',
-            onPress: () => console.log('OK Pressed'),
-        },
+        }
     ]);
-  }
+  };
+
+  const validateInputs = (email, password) => {
+    if (email.trim() === '') {
+        AlertWindow('Email cím nem lehet üres!');
+        return false;
+    }
+    else if(password.trim() === ''){
+        AlertWindow('Jelszó nem lehet üres!');
+        return false;
+    }
+    else if(!email.includes('@')){
+        AlertWindow('Nem megfelelő az email cím!');
+        return false;
+    }
+
+    return true;
+  };
 
   /*async function FacebookSignIn() {
     let cred = await onFacebookButtonPress();
@@ -74,15 +85,21 @@ const Login = ({navigation}) => {
   */
   
   const signIn = async (email, password) => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      console.log('Sikeres bejelentkezés:', user.email);
-      navigation.navigate('HomePage');
-      return user;
-    } catch (error) {
-      console.error('Bejelentkezési hiba:', error.message);
-      throw error;
+
+    if (!validateInputs(email, password)) {
+      return;
+    }
+    else{
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        console.log('Sikeres bejelentkezés:', user.email);
+        navigation.navigate('HomePage');
+        return user;
+      } catch (error) {
+        // A hibaüzenet megjelenítése, ha a bejelentkezés nem sikerül
+        AlertWindow('A bejelentkezés nem sikerült. Kérjük, ellenőrizze, hogy az adatok helyesek-e.');
+      }
     }
   };
 
@@ -93,6 +110,7 @@ const Login = ({navigation}) => {
   return (
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.inputContainer}>
+      <View style={styles.emailContainer}>
         <TextInput
           textContentType='emailAddress'
           placeholder="Email cím"
@@ -102,7 +120,8 @@ const Login = ({navigation}) => {
           style={styles.inputTop}
           keyboardType='email-address'
         />
-        <View style={styles.passwordContainer}>
+      </View>
+      <View style={styles.passwordContainer}>
           <TextInput
             textContentType='password'
             placeholder="Jelszó"
@@ -119,7 +138,7 @@ const Login = ({navigation}) => {
               onPress={changePasswordVisibility}
               style={styles.iconContainer}
           />
-        </View>
+      </View>
       </View>
 
       <View style={styles.buttonContainer}>
@@ -151,16 +170,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff'
   },
 
-  inputContainer: {
+  inputContainer:{
     margin: 15,
+    width: 320,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    //backgroundColor: '#F5F5F5',
+    //borderWidth: 1,
+    //borderColor: '#C9C9C9',
+    borderRadius: 7
+  },
+
+  emailContainer: {
+    marginTop: 15,
+    marginBottom: 10,
     width: 300,
     flexDirection: 'column',
     justifyContent: 'center',
     marginLeft: 'auto',
     marginRight: 'auto',
-    backgroundColor: '#F5F5F5',
-    borderWidth: 1,
-    borderColor: '#C9C9C9',
     borderRadius: 7
   },
 
@@ -171,7 +201,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 7,
     padding: 13,
     fontSize: 17,
-    color: '#818181'
+    color: '#BBBBBB'
   },
 
   inputBottom: {
@@ -187,11 +217,15 @@ const styles = StyleSheet.create({
 
   passwordContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems:  'center',
+    width: 300,
+    marginLeft: 20,
+    marginStart: 'auto',
+    justifyContent: 'center',
   },
 
   iconContainer: {
-    paddingLeft: 5,
+    marginLeft:3
   },
 
   buttonContainer: {

@@ -1,21 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth } from '../Services/firebase';
 import { getAuth, updateProfile } from "firebase/auth";
 import 'firebase/database';
 import 'firebase/storage';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-import { db } from '../Services/firebase';
+import { db, auth } from '../Services/firebase';
 import { doc, getDoc, collection } from "firebase/firestore";
 
-const Account = (navigation) => {
+const Account = ({navigation}) => {
   const [uId, setUId] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [points, setPoints] = useState(0);
+  const [level, setLevel] = useState(0);
   const [profilePic, setProfilePic] = useState(null);
   const [rewardNumber, setRewardNumber] = useState(0);
   const [userData, setUserData] = useState(null);
@@ -27,6 +26,7 @@ const Account = (navigation) => {
 
       if (userDocSnap.exists()) {
         setUserData(userDocSnap.data());
+        console.log(userDocSnap.data());
       } else {
         console.log("A felhasználó dokumentuma nem található.");
       }
@@ -53,11 +53,10 @@ const Account = (navigation) => {
 
 
   const handleSave = () => {
-    console.log(`Username: ${username}, Email: ${email}, Points: ${points}, Profile Pic: ${profilePic}`);
+    console.log(`Username: ${username}, Email: ${email}, Level: ${level}`);
   };
 
   const handleLogout = () => {
-    console.log("megnyomtam");
     auth.signOut().then(() => {
       console.log('User signed out successfully!');
       navigation.navigate('Welcome');
@@ -73,34 +72,33 @@ const Account = (navigation) => {
 
         <View style={styles.topContainer}>
           <View style={{ alignItems: 'center', marginBottom: 10 }}>
-            {/*<Image
+            <Image
               style={styles.profilePicture}
-  source={{ uri: profilePic }} />*/}
+              source={require('../assets/images/blank-profile-picture.png')} />
             <Text style={styles.usernameText}>{userData ? `${userData.username}` : "Betöltés..."}</Text>
-            <Text style={styles.text}>{points} pont</Text>
-          </View>
-          <View style={styles.buttonContainer}>
-            <Pressable style={styles.uploadButton}>
-              {profilePic ? <Image source={{ uri: profilePic }} /> : null}
-              <Text style={styles.uploadText} /*onPress={handlePickImage}*/>Profilkép feltöltése</Text>
-            </Pressable>
+            <Text style={styles.text}>{userData && userData.level ? `${userData.level}. szint` : "0. szint"}</Text>
+            <Text style={styles.text}>{userData && userData.xp ? `${userData.xp} XP` : "-"}</Text>
           </View>
         </View>
 
         <View style={styles.bottomContainer}>
           <Text style={styles.text}>Email cím: {auth.currentUser.email}</Text>
-          <Text style={styles.text} marginBottom={10}>Kitöltött tesztek száma: {rewardNumber}</Text>
-
+          <Text style={styles.text} marginBottom={10}>Jelvények száma: {rewardNumber}</Text>
+          <Text style={styles.text}>Teljes név: {userData && userData.fullName ? `${userData.fullName}` : "-"}</Text>
+          <Text style={styles.text}>Születési idő: {userData ? `${userData.birthdate.toDate().toLocaleDateString()}` : "-"}</Text>
+          <Text style={styles.text}>Nem: {userData && userData.gender ? `${ [userData.gender=='male' ? 'Férfi' : 'Nő'] }` : "-"}</Text>
+          <Text style={styles.text}>Magasság: {userData && userData.height ? `${userData.height} cm` : "-"}</Text>
+          <Text style={styles.text}>Testsúly: {userData && userData.weight ? `${userData.weight} kg` : "-"}</Text>
           <View style={styles.buttonContainer}>
             <Pressable style={styles.saveButton}>
-              <Text style={styles.btnText} onPress={() => handleSave}>Mentés</Text>
+              <Text style={styles.btnText} onPress={handleSave}>Mentés</Text>
             </Pressable>
           </View>
         </View>
   
         <View style={styles.buttonContainer}>
           <TouchableOpacity>
-            <Pressable style={styles.uploadButton} onPress={() => handleLogout}>
+            <Pressable style={styles.uploadButton} onPress={handleLogout}>
               <Text style={styles.uploadText}>Kijelentkezés</Text>
             </Pressable>
           </TouchableOpacity>
@@ -141,8 +139,8 @@ const styles = StyleSheet.create({
   },
 
   profilePicture: {
-    width: 200,
-    height: 200,
+    width: 150,
+    height: 150,
     borderRadius: 100,
     //marginBottom: 20
   },
@@ -203,7 +201,7 @@ const styles = StyleSheet.create({
 
   //Alsó konténer
   bottomContainer: {
-    flex: 2,
+    flex: 3,
     flexDirection: 'column',
     backgroundColor: '#fff',
     borderTopLeftRadius: 20,

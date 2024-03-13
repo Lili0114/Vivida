@@ -85,6 +85,7 @@ const Register = ({navigation}) => {
     };
 
     const validateInputs = (email, password, username, birthdate) => {
+        //const today = new Date(Date.now()).toLocaleString();
         if (email.trim() === '') {
             AlertWindow('Email cím nem lehet üres!');
             return false;
@@ -97,8 +98,16 @@ const Register = ({navigation}) => {
             AlertWindow('Jelszó nem lehet üres!');
             return false;
         }
+        if(password.length < 6){
+            AlertWindow('A jelszó legalább 6 karakter hosszú legyen!');
+            return false;
+        }
         if(birthdate == null){
             AlertWindow('Születési dátum nem lehet üres!');
+            return false;
+        }
+        if(birthdate > Date.now()){
+            AlertWindow('Születési dátum nem megfelelő!');
             return false;
         }
         return true;
