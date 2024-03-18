@@ -20,20 +20,18 @@ const Account = ({navigation}) => {
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchUserData = async () => {
       const currentUserDoc = doc(collection(db, "users"), auth.currentUser.uid);
       const userDocSnap = await getDoc(currentUserDoc);
 
       if (userDocSnap.exists()) {
         setUserData(userDocSnap.data());
-        console.log(userDocSnap.data());
-      } else {
-        console.log("A felhasználó dokumentuma nem található.");
       }
+      else throw Error();
     };
 
-    fetchData();
-  }, []);
+    fetchUserData();
+  }, [userData]);
 
   /*const auth = getAuth();
 
@@ -58,7 +56,6 @@ const Account = ({navigation}) => {
 
   const handleLogout = () => {
     auth.signOut().then(() => {
-      console.log('User signed out successfully!');
       navigation.navigate('Welcome');
     })
     .catch((error) => {

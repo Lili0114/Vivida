@@ -1,15 +1,50 @@
-import { Text, StyleSheet, View } from 'react-native';
+import { Text, StyleSheet, View, ScrollView } from 'react-native';
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card } from 'react-native-elements';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../Services/firebase';
 
 const Plans = () => {
+
+    const [plans, setPlans] = React.useState([]);
+
+    React.useEffect(() => {
+        const fetchPlans = async () => {
+            const plansCollection = collection(db, 'plans');
+            const plansSnapshot = await getDocs(plansCollection);
+            const plansData = plansSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setPlans(plansData);
+        };
+    
+        fetchPlans();
+    }, []);
+
+    const beginnerPlans = plans.filter(plan => plan.difficulty === 'Kezdő');
+    const advancedPlans = plans.filter(plan => plan.difficulty === 'Haladó');
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
                 <Text style={[styles.header, styles.boldText]}>Edzéstervek</Text>
-                <Text style={styles.regularText}>Válassz a tervek közül vagy készíts sajátot!</Text>
+                <Text style={styles.regularText}>Válassz a tervek közül!</Text>
             </View>
+            <Text style={styles.regularText}>Kezdő</Text>
+            <ScrollView horizontal={true} contentContainerStyle={styles.containerScrollView}>
+                {beginnerPlans.map((plan) => (
+                    <Card key={plan.id} containerStyle={styles.quizCards}>
+                        <Text style={styles.cardText}>{plan.type}</Text>
+                    </Card>
+                ))}
+            </ScrollView>
+            <Text style={styles.regularText}>Haladó</Text>
+            <ScrollView horizontal={true} contentContainerStyle={styles.containerScrollView}>
+                {advancedPlans.map((plan) => (
+                    <Card key={plan.id} containerStyle={styles.quizCards}>
+                        <Text style={styles.cardText}>{plan.type}</Text>
+                    </Card>
+                ))}
+            </ScrollView>
         </SafeAreaView>
     )
 }
@@ -113,7 +148,15 @@ const styles = StyleSheet.create({
     quizCards: {
         height: 200,
         width: 180
-    }
+    },
+
+    cardText: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        color: 'black'
+    },
 })
 
 export default Plans

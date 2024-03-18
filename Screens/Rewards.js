@@ -1,37 +1,85 @@
-import { Text, StyleSheet, View, Animated } from 'react-native';
+import { Text, StyleSheet, View, Animated, Pressable, Alert, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { doc, getDoc, collection, getDocs } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
 import { db, auth } from '../Services/firebase';
 
 const Rewards = () => {
 
     const [userData, setUserData] = useState(null);
-    const [levels, setLevels] = useState([]);
+    const [progress, setProgress] = useState(0);
+    const [previousUserLevel, setPreviousUserLevel] = useState(null);
+    const [currentUserLevel, setCurrentUserLevel] = useState(null);
+    const [length, setLength] = useState(0);
 
     useEffect(() => {
-        const fetchData = async () => {
-          const currentUserDoc = doc(collection(db, "users"), auth.currentUser.uid);
-          const userDocSnap = await getDoc(currentUserDoc);
+        const fetchUserData = async () => {
+            const currentUserDoc = doc(collection(db, "users"), auth.currentUser.uid);
+            const userDocSnap = await getDoc(currentUserDoc);
     
-          if (userDocSnap.exists()) {
-            setUserData(userDocSnap.data());
-          } else {
-            console.log("A felhasználó dokumentuma nem található.");
-          }
+            if (userDocSnap.exists()) {
+                setUserData(userDocSnap.data());
+    
+                const levelsCollection = collection(db, 'levels');
+                const levelsSnapshot = await getDocs(levelsCollection);
+                const levelsData = levelsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));    
+                const currentLevel = levelsData.find(level => parseInt(level.id, 10) == userDocSnap.data().level);  //query(levelsCollection, where('3', "==", userDocSnap.data().level)); 
+                const currentLevelDocSnap = await getDoc(doc(collection(db, "levels"), currentLevel.id));
+
+                if (currentLevel.id > 1) {
+                    const previousLevel = levelsData.find(level => parseInt(level.id, 10) == userDocSnap.data().level-1);
+                    const previousLevelDocSnap = await getDoc(doc(collection(db, "levels"), previousLevel.id));
+                    
+                    setLength(currentLevel.requiredXP - previousLevel.requiredXP);
+                    setProgress(((userDocSnap.data().xp - previousLevel.requiredXP) / length) * 100);
+                    setCurrentUserLevel(currentLevelDocSnap.data());
+                    setPreviousUserLevel(previousLevelDocSnap.data());
+                }
+                else{
+                    const previousLevel = { id: '0', requiredXP: 0 };
+                    setLength(currentLevel.requiredXP);
+                    setProgress((userDocSnap.data().xp / length) * 100);
+                    setCurrentUserLevel(currentLevelDocSnap.data());
+                    setPreviousUserLevel(previousLevel);
+                }
+            } else {
+                console.log("A felhasználó dokumentuma nem található.");
+            }
         };
-
-        const fetchLevels = async () => {
-            const levelsCollection = collection(db, 'levels');
-            const levelsSnapshot = await getDocs(levelsCollection);
-            setLevels(levelsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-          };
-
-        console.log("Szintek: ", levels);
-        fetchLevels();
     
-        fetchData();
-      }, []);
+        fetchUserData();
+    }, [userData]);
+
+    const handleXPIncrease = async () => {
+        const currentUserDoc = doc(collection(db, "users"), auth.currentUser.uid);
+        const userDocSnap = await getDoc(currentUserDoc);
+    
+        if (userDocSnap.exists()) {
+            const currentXP = userDocSnap.data().xp;
+            const newXP = currentXP + 20;
+            const userLevel = userDocSnap.data().level;
+            const levelsSnapshot = await getDocs(collection(db, 'levels'));
+            const levelsData = levelsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));    
+            const currentLevel = levelsData.find(level => parseInt(level.id, 10) == userLevel); 
+
+            if (newXP >= currentLevel.requiredXP) {
+                await updateDoc(currentUserDoc, {
+                    level: userLevel + 1,
+                    xp: newXP
+                });
+                currentLevel.id = currentLevel.id + 1;
+                Alert.alert("Level up", `${userLevel+1}. szintre léptél. Csak így tovább!`, [
+                    {
+                        text: 'OK',
+                    }
+                ]);
+            } else {
+                await updateDoc(currentUserDoc, {
+                    xp: newXP
+                });  
+            }
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -39,18 +87,28 @@ const Rewards = () => {
                 <Text style={[styles.header, styles.boldText]}>Jutalmak</Text>
                 <Text style={[styles.header, styles.boldText]}>Jelenlegi szint</Text>
 
+                <Text style={[styles.regularText, styles.boldText, {paddingTop: 10}]}>{userData && userData.level ? `${userData.level}. szint` : "0. szint"}</Text>
+                <Text style={[styles.regularText, styles.boldText, {paddingBottom: 10}]}>{userData && userData.xp ? `${userData.xp} XP` : "-"}</Text>  
+
                 <View style={styles.progressContainer}>
                     <View style={styles.progressBar}>
-                        <Animated.View style={{ ...StyleSheet.absoluteFill, borderRadius: 10, backgroundColor: "#1989DF", width: "70%" }}/>
+                        <Animated.View style={{ ...StyleSheet.absoluteFill, borderRadius: 10, backgroundColor: "#1989DF", width: `${progress}%` }}/>
                     </View>
                 </View>
-
-                <Text style={styles.regularText}>{userData && userData.level ? `${userData.level}. szint` : "0. szint"}</Text>
-                <Text style={styles.regularText}>{userData && userData.xp ? `${userData.xp} XP` : "-"}</Text>               
+                <View style={styles.levelContainer}>                    
+                    <Text style={styles.regularText}>{userData && previousUserLevel ? `${previousUserLevel.requiredXP} XP` : "-" }</Text>
+                    <Text style={styles.regularText}>{userData && currentUserLevel ? `${currentUserLevel.requiredXP} XP` : "-"}</Text>
+                </View>                    
+               
                 <Text style={[styles.header, styles.boldText]}>Kitűzők</Text>
                 <Text style={styles.regularText}>Itt találod az eddig megszerzett kitűzőidet</Text>
                 <Text style={[styles.header, styles.boldText]}>Beváltható kuponok</Text>
                 <Text style={styles.regularText}>Itt találod az elérhető kuponokat, amiket pontjaid felhasználásával tudsz megszerezni</Text>
+                <TouchableOpacity>
+                    <Pressable style={styles.xpButton} onPress={handleXPIncrease}>
+                        <Text style={{ padding: 15, color: 'white', textAlign: 'center'}}>Növeld az xp-d!</Text>
+                    </Pressable>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     )
@@ -105,59 +163,21 @@ const styles = StyleSheet.create({
         borderColor: '#C9C9C9'
     },
 
-    iconsContainer: {
-        flex: 1,
+    levelContainer: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        alignContent: 'center',
-        justifyContent: 'center',
-        marginVertical: 10
+        justifyContent: 'space-between',
+        paddingHorizontal: 10,
     },
 
-    icons: {
-        height: 90,
-        width: 70,
-        //borderColor: 'black',
-        //borderWidth: 2,
-        marginVertical: 5,
-        marginHorizontal: 15,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
+    xpButton: {
+        width: 150,
+        backgroundColor: '#1989DF',
+        borderRadius: 7,
+        paddingVertical: 5,
+        marginVertical: 15,
+        marginHorizontal: 15
+      },
 
-    iconText: {
-        textAlign: 'center',
-        alignContent: 'center',
-        fontSize: 12
-    },
-
-    categoryCardImage: {
-        height: 50,
-        width: 50,
-        marginBottom: 10
-    },
-
-    categoryCardImageInCaseOfLongText: {
-        height: 50,
-        width: 50,
-        marginBottom: 10,
-        marginTop: 15
-    },
-
-    quizContainer: {
-        flex: 2,
-        flexDirection: 'column'
-    },
-
-    containerScrollView: {
-        flexDirection: 'row',
-
-    },
-
-    quizCards: {
-        height: 200,
-        width: 180
-    }
 })
 
 export default Rewards

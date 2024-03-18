@@ -1,32 +1,20 @@
 import { Text, StyleSheet, View, Animated, Pressable } from 'react-native';
-import React, { Component, useRef, useState } from 'react';
+import React, { Component, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Image } from 'react-native-elements';
-import { db } from '../Services/firebase';
-import { collection, getDocs } from "firebase/firestore";
+import { db, auth } from '../Services/firebase';
+import { collection, updateDoc, getDoc, doc, onSnapshot } from "firebase/firestore";
 import StepCounter from './StepCounter';
+//import Notifications from 'react-native-notifications';
 
 const Home = () => {
-    const [progress, setProgress] = useState(0);
+    const [userData, setUserData] = useState(null);
 
-    const counter = useRef(new Animated.Value(0)).current;
-    const width = counter.interpolate({
-        inputRange: [0, 100],
-        outputRange: ["0%", "100%"],
-        extrapolate: "clamp"
-      })
+    /*PushNotification.localNotificationSchedule({
+        message: "Hello, this is a scheduled notification!", 
+        date: new Date(Date.now() + (10 * 1000)) // 10 mp múlva
+    });*/
 
-    const handlePress = () => {
-      setProgress((prevProgress) => prevProgress + 0.1);
-    };
-
-    async function listUsers() {
-        const collectionRef = collection(db, "users");
-        const snapshot = await getDocs(collectionRef);
-        snapshot.forEach(doc => {
-            console.log(doc.id, " => ", doc.data());
-        });
-    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -57,15 +45,10 @@ const Home = () => {
                 </View>
             </View>
 
-            <View style={styles.quizContainer}>
+            <View style={styles.taskContainer}>
                 <Text style={[styles.header, styles.boldText]}>Ajánlott feladatok</Text>
                 <Text style={styles.regularText}>Végezd el a napi feladatokat, hogy minél több jutalmat és jelvényt szerezhess!</Text>
             </View>
-        {/*<View>
-          <Progress.Bar progress={progress} width={200} height={20} />
-          <Button onPress={handlePress} title="Increase progress" />
-          <Text>Progress: {(progress * 100).toFixed(0)}%</Text>
-        </View>*/}
         </SafeAreaView>
 
     )
@@ -158,7 +141,7 @@ const styles = StyleSheet.create({
         marginTop: 15
     },
 
-    quizContainer: {
+    taskContainer: {
         flex: 2,
         flexDirection: 'column'
     },

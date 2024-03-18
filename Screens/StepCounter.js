@@ -1,35 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text } from 'react-native';
-import {
-    accelerometer,
-    setUpdateIntervalForType,
-    SensorTypes
-} from "react-native-sensors";
+import { View, Text, Alert } from 'react-native';
+import { accelerometer, setUpdateIntervalForType, SensorTypes } from "react-native-sensors";
 import { map, filter } from "rxjs/operators";
 
 const StepCounter = () => {
     const [steps, setSteps] = useState(0);
 
     useEffect(() => {
-        setUpdateIntervalForType(SensorTypes.accelerometer, 400); // defaults to 100ms
+        setUpdateIntervalForType(SensorTypes.accelerometer, 400); // 100ms
 
         const subscription = accelerometer
-            .pipe(map(({ x, y, z }) => x + y + z), filter(speed => speed > 20))
-            .subscribe(
-                speed => {
-                    console.log(`You moved your phone with ${speed}`);
+            .pipe(map(({ x, y, z }) => x + y + z), filter(speed => speed > 15))
+            .subscribe({
+                next: speed => {
                     setSteps(prevSteps => prevSteps + 1);
                 },
-                error => {
+                error: error => {
                     console.log("The sensor is not available");
                 }
-            );
+            });
 
         return () => {
-            // If it's the last subscription to accelerometer it will stop polling in the native API
             subscription.unsubscribe();
         };
     }, []);
+
+    if (steps == 20) {
+        Alert.alert("Gratulálok", "Már " + `${steps}` + " lépést megtettél, hajráááá", [
+            {
+                text: 'OK',
+            }
+        ]);
+    }
 
     return (
         <View style={{ height: 200, alignItems: 'center', flex: 1, marginBottom: 30 }}>

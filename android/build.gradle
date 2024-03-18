@@ -16,8 +16,9 @@ buildscript {
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
         classpath 'com.google.gms:google-services:4.4.0'
-
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.7.1'
     }
 }
 
 apply plugin: "com.facebook.react.rootproject"
+//apply plugin: 'com.google.firebase.crashlytics:2.9.9'

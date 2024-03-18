@@ -46,6 +46,7 @@ class MainApplication : Application(), ReactApplication {
       FirebaseApp.initializeApp(this, options, "secondary")
   }
 
+
   override fun onCreate() {
     super.onCreate()
     SoLoader.init(this, false)
