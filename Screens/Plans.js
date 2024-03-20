@@ -1,15 +1,15 @@
-import { Text, StyleSheet, View, ScrollView } from 'react-native';
-import React, { Component } from 'react';
+import { Text, StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { Component, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from 'react-native-elements';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../Services/firebase';
 
-const Plans = () => {
+const Plans = ({navigation}) => {
 
-    const [plans, setPlans] = React.useState([]);
+    const [plans, setPlans] = useState([]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchPlans = async () => {
             const plansCollection = collection(db, 'plans');
             const plansSnapshot = await getDocs(plansCollection);
@@ -23,26 +23,34 @@ const Plans = () => {
     const beginnerPlans = plans.filter(plan => plan.difficulty === 'Kezdő');
     const advancedPlans = plans.filter(plan => plan.difficulty === 'Haladó');
 
+    const handlePlanDetails = (plan) => {
+        navigation.navigate('PlanDetails', { plan });
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
                 <Text style={[styles.header, styles.boldText]}>Edzéstervek</Text>
                 <Text style={styles.regularText}>Válassz a tervek közül!</Text>
             </View>
-            <Text style={styles.regularText}>Kezdő</Text>
+            <Text style={[styles.regularText, {fontSize: 18}]}>Kezdő</Text>
             <ScrollView horizontal={true} contentContainerStyle={styles.containerScrollView}>
                 {beginnerPlans.map((plan) => (
-                    <Card key={plan.id} containerStyle={styles.quizCards}>
-                        <Text style={styles.cardText}>{plan.type}</Text>
-                    </Card>
+                    <TouchableOpacity key={plan.id} onPress={() => handlePlanDetails(plan)}>
+                        <Card containerStyle={styles.planCards}>
+                            <Text style={styles.cardText}>{plan.type}</Text>
+                        </Card>
+                    </TouchableOpacity>
                 ))}
             </ScrollView>
-            <Text style={styles.regularText}>Haladó</Text>
+            <Text style={[styles.regularText, {fontSize: 18}]}>Haladó</Text>
             <ScrollView horizontal={true} contentContainerStyle={styles.containerScrollView}>
                 {advancedPlans.map((plan) => (
-                    <Card key={plan.id} containerStyle={styles.quizCards}>
-                        <Text style={styles.cardText}>{plan.type}</Text>
-                    </Card>
+                    <TouchableOpacity key={plan.id} onPress={() => handlePlanDetails(plan)}>
+                        <Card containerStyle={styles.planCards}>
+                            <Text style={styles.cardText}>{plan.type}</Text>
+                        </Card>
+                    </TouchableOpacity>
                 ))}
             </ScrollView>
         </SafeAreaView>
@@ -142,20 +150,20 @@ const styles = StyleSheet.create({
 
     containerScrollView: {
         flexDirection: 'row',
-
     },
 
-    quizCards: {
-        height: 200,
-        width: 180
-    },
-
-    cardText: {
-        flex: 1,
+    planCards: {
+        height: 180,
+        width: 200,           
         justifyContent: 'center',
         alignItems: 'center',
         textAlign: 'center',
-        color: 'black'
+        borderRadius: 15
+    },
+
+    cardText: {
+        color: 'black',
+        fontSize: 18
     },
 })
 

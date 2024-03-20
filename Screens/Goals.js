@@ -1,17 +1,68 @@
 import { Text, StyleSheet, View } from 'react-native';
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { collection, doc, getDoc, getDocs, query, where, setDoc } from 'firebase/firestore';
+import { auth, db } from '../Services/firebase';
 
 const Goals = () => {
+
+    const [chosenPlan, setChosenPlan] = useState(null);
+    const [goals, setGoals] = useState([]);
+
+    useEffect(() => {
+        const fetchPlanAndGoals = async () => {
+            // Kiválasztott terv
+            const userPlanCollection = collection(db, 'user_plan');
+            const q = query(userPlanCollection, where('user_id', '==', auth.currentUser.uid));
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) {
+                return;
+            }
+    
+            const userPlan = querySnapshot.docs[0].data();
+            const planRef = doc(db, 'plans', userPlan.plan_id);
+            const planSnapshot = await getDoc(planRef);
+            const plan = { id: planSnapshot.id, ...planSnapshot.data() };
+            setChosenPlan(plan);
+    
+            // A terv céljai, adatai
+            const goalsCollection = collection(planRef, 'goals');
+            const goalsSnapshot = await getDocs(goalsCollection);
+            const goalsData = goalsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setGoals(goalsData);
+        };
+    
+        fetchPlanAndGoals();
+    }, [chosenPlan, goals]);
+
+    /* TODO: Teljesített és nem teljesített célok alapján különválogatni, illetve a jutalmakat kezelni, 
+    hogy kapja meg a felhasználó, hogy jelenik meg és hol
+
+    const goalRef = doc(db, `user_plan/${user_plan.id}/goals/${user_plan.}`);
+    await setDoc(doc(db, "someCollection/someDocument"), {
+        goal: goalRef
+    }); */
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topContainer}>
                 <Text style={[styles.header, styles.boldText]}>Célok</Text>
-                <Text style={styles.regularText}>Tűzz ki célokat, és szerezz jelvényeket!</Text>
             </View>
+                {chosenPlan ? (
+                    <>
+                        <Text style={styles.header}>{chosenPlan.name}</Text>
+                        {goals.map((goal) => (
+                            <View key={goal.id} style={styles.goalContainer}>
+                                <Text style={styles.goalText}>{goal.description}</Text>
+                            </View>
+                        ))}
+                    </>
+                ) : (
+                    <Text style={styles.regularText}>Válassz ki egy tervet, hogy tudj célokat teljesíteni!</Text>
+                )}
+            
         </SafeAreaView>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -113,7 +164,22 @@ const styles = StyleSheet.create({
     quizCards: {
         height: 200,
         width: 180
-    }
+    },
+
+    goalContainer: {
+        justifyContent: 'center',
+        alignContent: 'center',
+        marginVertical: 10,
+        marginHorizontal: 15,
+        padding: 15,
+        backgroundColor: '#f8f8f8',
+        borderRadius: 5,
+    },
+
+    goalText: {
+        fontSize: 16,
+        color: 'black'
+    },
 })
 
 export default Goals

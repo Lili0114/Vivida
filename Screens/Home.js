@@ -5,16 +5,33 @@ import { Button, Image } from 'react-native-elements';
 import { db, auth } from '../Services/firebase';
 import { collection, updateDoc, getDoc, doc, onSnapshot } from "firebase/firestore";
 import StepCounter from './StepCounter';
+import storage from '@react-native-firebase/storage';
 //import Notifications from 'react-native-notifications';
 
 const Home = () => {
     const [userData, setUserData] = useState(null);
+    const [imageUrls, setImageUrls] = useState([]);
 
     /*PushNotification.localNotificationSchedule({
         message: "Hello, this is a scheduled notification!", 
         date: new Date(Date.now() + (10 * 1000)) // 10 mp múlva
     });*/
 
+    useEffect(() => {
+        const images = ['test_badge.png'];
+    
+        const fetchImage = async (imageName) => {
+            const url = await storage().ref('/badges/' + imageName).getDownloadURL();
+            return url;
+        };
+    
+        const fetchAllImages = async () => {
+            const urls = await Promise.all(images.map(fetchImage));
+            setImageUrls(urls);
+        };
+    
+        fetchAllImages().catch((e) => console.log('Errors while downloading => ', e));
+    }, []);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -38,9 +55,7 @@ const Home = () => {
                     <Text style={styles.iconText}>Statisztikák</Text>
                 </View>
                 <View style={styles.icons}>
-                    <Image 
-                        source={require('../assets/images/triangle.png')}
-                        style={styles.categoryCardImage}/>
+                    {imageUrls[0] && <Image source={{ uri: imageUrls[0] }} style={styles.categoryCardImage} />}
                     <Text style={styles.iconText}>Egyéb</Text>
                 </View>
             </View>
@@ -50,7 +65,6 @@ const Home = () => {
                 <Text style={styles.regularText}>Végezd el a napi feladatokat, hogy minél több jutalmat és jelvényt szerezhess!</Text>
             </View>
         </SafeAreaView>
-
     )
 }
 

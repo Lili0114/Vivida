@@ -14,6 +14,7 @@ import ForgotPassword from './Screens/ForgotPassword';
 import Goals from './Screens/Goals';
 import StepCounter from './Screens/StepCounter';
 import Rewards from './Screens/Rewards';
+import PlanDetails from './Screens/PlanDetails';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -23,7 +24,7 @@ function Tabs() {
     <Tab.Navigator>
       <Tab.Screen name='Kezdőlap' component={Home} options={{ headerShown: false }} />
       <Tab.Screen name='Tervek' component={Plans} options={{headerShown: false}} />
-      <Tab.Screen name='Goals' component={Goals} options={{headerShown: false}} />
+      <Tab.Screen name='Célok' component={Goals} options={{headerShown: false}} />
       <Tab.Screen name='Stopper' component={Stopwatch} options={{ headerShown: false }} />
       <Tab.Screen name='Jutalmak' component={Rewards} options={{headerShown: false}} />
       <Tab.Screen name='Profil' component={Account} options={{ headerShown: false }} />
@@ -92,6 +93,13 @@ const App = () => {
           component={Plans}
           options={{
             headerShown: false
+          }} />
+        
+        <Stack.Screen
+          name="PlanDetails"
+          component={PlanDetails}
+          options={{
+            title: 'Terv részletei'
           }} />
 
         <Stack.Screen
