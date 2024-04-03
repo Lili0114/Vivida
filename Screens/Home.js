@@ -1,69 +1,101 @@
-import { Text, StyleSheet, View, Animated, Pressable } from 'react-native';
-import React, { Component, useEffect, useRef, useState } from 'react';
+//Home.js
+import { Text, StyleSheet, View, Animated, Pressable, ScrollView } from 'react-native';
+import React, { Component, useEffect, useContext, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Image } from 'react-native-elements';
 import { db, auth } from '../Services/firebase';
 import { collection, updateDoc, getDoc, doc, onSnapshot } from "firebase/firestore";
 import StepCounter from './StepCounter';
 import storage from '@react-native-firebase/storage';
-//import Notifications from 'react-native-notifications';
+import messaging from '@react-native-firebase/messaging';
+import { NotificationContext } from '../NotificationProvider';
+import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const Home = () => {
     const [userData, setUserData] = useState(null);
     const [imageUrls, setImageUrls] = useState([]);
 
-    /*PushNotification.localNotificationSchedule({
-        message: "Hello, this is a scheduled notification!", 
-        date: new Date(Date.now() + (10 * 1000)) // 10 mp múlva
-    });*/
-
     useEffect(() => {
-        const images = ['test_badge.png'];
-    
-        const fetchImage = async (imageName) => {
-            const url = await storage().ref('/badges/' + imageName).getDownloadURL();
-            return url;
+        const fetchImages = async () => {
+            const list = await storage().ref('/badges').listAll();
+            const urls = await Promise.all(list.items.map(async (ref) => {
+                const url = await ref.getDownloadURL();
+                return { name: ref.name, url: url };
+            }));
+            const imageUrlMap = urls.reduce((acc, { name, url }) => {
+                acc[name] = url;
+                return acc;
+            }, {});
+            setImageUrls(imageUrlMap);
         };
     
-        const fetchAllImages = async () => {
-            const urls = await Promise.all(images.map(fetchImage));
-            setImageUrls(urls);
-        };
-    
-        fetchAllImages().catch((e) => console.log('Errors while downloading => ', e));
+        fetchImages().catch((e) => console.log('Errors while downloading => ', e));
     }, []);
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.topContainer}>
-                <Text style={[styles.header, styles.boldText]}>Kezdőlap</Text>
-            </View>
+            <ScrollView>
+                <StepCounter/>
 
-            <StepCounter/>
+                {/* Csak akkor kell ezt megjeleníteni, ha van aktuális, VAGY ha nincs, kiírni, hogy jelenleg nincsen kihívás. */}
+                <View style={styles.taskContainer}>
+                    <Text style={styles.header}>NAPI KIHÍVÁS ÉRHETŐ EL!</Text>
+                    <View style={styles.goalContainer}>
+                        <Text style={styles.xpText}>35 xp</Text>
+                        <Text style={styles.goalText}>
+                            A héten fuss le 15 km-t! </Text>
+                        <Text style={[styles.goalText, {color: '#958CAB'}]}> 6 / 15</Text>
+                        {/*<Text style={styles.goalText}>{'\n'}Hátralévő idő: x</Text>*/}
+                    </View>
+                </View>
 
-            <View style={styles.iconsContainer}>
-                <View style={styles.icons}>
-                    <Image 
-                        source={require('../assets/images/triangle.png')}
-                        style={styles.categoryCardImageInCaseOfLongText}/>
-                    <Text style={styles.iconText}>Napi {"\n"}mérések</Text>
+                <View style={styles.taskContainer}>
+                    <Text style={styles.header}>KIEMELT JUTALMAK</Text>
+                    <View style={styles.rewardContainer}>
+                        <Text style={styles.rewardText}>10%-os kuponod van a {'\n'}Gymesco edzőterembe.</Text>
+                    </View>
+                    <View style={styles.rewardContainer}>
+                        <Text style={styles.rewardText}>
+                            Tegnapi nap folyamán {'\n'}
+                            megszerezted a "lelkes {'\n'}
+                            sportoló" kitüntetést.</Text>
+                    </View>
                 </View>
-                <View style={styles.icons}>
-                    <Image 
-                        source={require('../assets/images/triangle.png')}
-                        style={styles.categoryCardImage}/>
-                    <Text style={styles.iconText}>Statisztikák</Text>
-                </View>
-                <View style={styles.icons}>
-                    {imageUrls[0] && <Image source={{ uri: imageUrls[0] }} style={styles.categoryCardImage} />}
-                    <Text style={styles.iconText}>Egyéb</Text>
-                </View>
-            </View>
 
-            <View style={styles.taskContainer}>
-                <Text style={[styles.header, styles.boldText]}>Ajánlott feladatok</Text>
-                <Text style={styles.regularText}>Végezd el a napi feladatokat, hogy minél több jutalmat és jelvényt szerezhess!</Text>
-            </View>
+                <View style={styles.taskContainer}>
+                    <Text style={styles.header}>AKTUÁLIS CÉLOK</Text>
+                    <View style={styles.goalContainer}>
+                        <Text style={styles.xpText}>35 xp</Text>
+                        <Text style={styles.goalText}>
+                            A héten fuss le 15 km-t! </Text>
+                        <Text style={[styles.goalText, {color: '#958CAB'}]}> 6 / 15</Text>
+                    </View>
+                </View>
+
+                <View style={styles.taskContainer}>
+                    <Text style={styles.header}>HETI STATISZTIKÁK</Text>
+                    <View style={styles.rewardContainer}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <View>
+                                <Text style={styles.statText}>Elégetett kalória:</Text>
+                                <Text style={styles.statText}>Teljesített kihívások:</Text>
+                            </View>
+                            <View>
+                                <Text style={styles.statText}> x kcal </Text>
+                                <Text style={styles.statText}> y db </Text>
+                            </View>
+                        </View>
+                        <Pressable /*onPress*/>
+                            <Text style={[styles.statText, { fontStyle: 'italic', marginTop: 10, fontSize: 14 }]}> További elemzések {'>'}</Text>
+                        </Pressable>
+                    </View>
+                </View>
+                <Text style={[styles.regularText, {marginTop: 30}]}>
+                        Megjegyzés: a konkrét értékeket 
+                        - százalék, kitüntetés neve - változókkal kell majd helyettesíteni 
+                        + kitüntetésnél esetleges ikont elhelyezni.
+                </Text>
+            </ScrollView>
         </SafeAreaView>
     )
 }
@@ -72,7 +104,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        backgroundColor: '#ADCEE8',
+        backgroundColor: '#0B0A0C',
+        marginBottom: 20
     },
 
     topContainer: {
@@ -93,15 +126,63 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
     },
 
+    rewardContainer: {
+        borderWidth: 1,
+        borderColor: '#958CAB',
+        borderRadius: 10,
+        marginTop: 10,
+        marginHorizontal: 20,
+        padding: 5
+    },
+
+    goalContainer: {
+        marginTop: 10,
+        marginHorizontal: 20,
+        padding: 5,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+        
+    },
+
+    xpText:{
+        borderRadius: 30,
+        borderWidth: 1,
+        borderColor: '#958CAB',
+        color: '#C5FE37',
+        paddingHorizontal: 5,
+        paddingVertical: 12,
+        textAlign: 'center'
+    },
+
+    rewardText: {
+        fontSize: 15,
+        paddingHorizontal: 5,
+        color: "#FFFFFF",
+    },
+
+    statText: {
+        fontSize: 15,
+        paddingHorizontal: 5,
+        color: "#FFFFFF",
+    },
+
+    goalText: {
+        fontSize: 15,
+        paddingHorizontal: 5,
+        color: "#FFFFFF",
+        marginLeft: 10
+    },
+
     boldText: {
         fontWeight: 'bold',
         color: "#FFFFFF",
     },
 
     header: {
-        fontSize: 30,
+        fontSize: 20,
         paddingTop: 20,
-        paddingHorizontal: 15
+        paddingHorizontal: 15,
+        color: '#C5FE37'
     },
 
     progressBar: {

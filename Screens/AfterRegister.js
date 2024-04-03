@@ -1,28 +1,22 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Pressable, LogBox } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Pressable } from 'react-native';
 
-LogBox.ignoreAllLogs();
-
-const Welcome = ({navigation}) => {
+const AfterRegister = ({navigation}) => {
     return (
         <View style={styles.Container}>
             <View style={styles.TopContainer}>
-                <Text style={styles.WelcomeText}>
-                    ÖRÖMMEL {'\n'}
-                    LÁTJUK, HOGY {'\n'}
-                    A {''}
-                    <Text style={styles.AppName}>VIVIDA</Text> {'\n'}
-                    ALKALMAZÁST {'\n'}
-                    VÁLASZTOTTA!
+                <Text style={styles.Caption}>
+                    A TÖKÉLETES {'\n'}
+                    EDZÉSTERV {'\n'}
+                    ELKÉSZÍTÉSÉHEZ {''}
+                    ADD MEG {'\n'}
+                    ADATAID!
                 </Text>
             </View>
             <View style={styles.ButtonContainer}>
                 <TouchableOpacity>
-                    <Pressable style={styles.LoginButton} onPress={() => navigation.navigate('Login')}>
-                        <Text style={styles.LoginButtonText}>BELÉPEK</Text>
-                    </Pressable>
-                    <Pressable style={styles.RegisterButton} onPress={() => navigation.navigate('Register')}>
-                        <Text style={styles.RegisterButtonText}>REGISZTRÁLOK</Text>
+                    <Pressable style={styles.LoginButton} onPress={() => navigation.navigate('AfterRegisterDetails')}>
+                        <Text style={styles.LoginButtonText}>MEGADOM</Text>
                     </Pressable>
                 </TouchableOpacity>                
             </View>
@@ -30,7 +24,7 @@ const Welcome = ({navigation}) => {
     )
 }
 
-export default Welcome
+export default AfterRegister
 
 const styles = StyleSheet.create({
     Container: {
@@ -47,7 +41,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15
     },
 
-    WelcomeText: {
+    Caption: {
         fontSize: 36,
         color: '#FFF',
         textAlign: 'left',
@@ -59,23 +53,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginLeft: 'auto',
         marginRight: 'auto',
-    },
-    
-    RegisterButton: {
-        width: 350,
-        margin: 4,
-        padding: 15,
-        backgroundColor: 'transparent',
-        borderWidth: 1,
-        borderColor: '#FFF',
-        borderRadius: 7
-    },
-
-    RegisterButtonText: {
-        fontSize: 16,
-        color: '#FFF',
-        marginLeft: 'auto',
-        marginRight: 'auto'
     },
 
     LoginButton: {

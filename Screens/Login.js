@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-//import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-//import { LoginManager, AccessToken, LoginButton } from 'react-native-fbsdk';
+import React, { useState } from 'react';
+import { IconButton, TextInput } from 'react-native-paper';
+import { KeyboardAvoidingView, Pressable, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { auth, db } from '../Services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import 'firebase/firestore';
+import { doc, getDoc } from "firebase/firestore";
+
+
+//import { LoginManager, AccessToken, LoginButton } from 'react-native-fbsdk';
+//import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -15,7 +18,7 @@ const Login = ({navigation}) => {
   const changePasswordVisibility = () => { 
       setShowPassword(!showPassword);
   };
-
+ 
   function AlertWindow (message) {
     Alert.alert("Hiba", message, [
         {
@@ -82,6 +85,10 @@ const Login = ({navigation}) => {
       />
       </View>
   
+
+    const handleFacebookLogin = () => {
+    signInWithFacebook();
+  };
   */
   
   const signIn = async (email, password) => {
@@ -93,69 +100,79 @@ const Login = ({navigation}) => {
       try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        console.log('Sikeres bejelentkezés:', user.email);
-        navigation.navigate('HomePage');
+        const userDoc = doc(db, 'users', user.uid);
+        const userDocSnapshot = await getDoc(userDoc);
+        
+        if (userDocSnapshot.exists()) {
+          navigation.navigate('HomePage');
+        } else {
+          navigation.navigate('AfterRegister');
+        }
+
         return user;
       } catch (error) {
-        // A hibaüzenet megjelenítése, ha a bejelentkezés nem sikerül
-        AlertWindow('A bejelentkezés nem sikerült. Kérjük, ellenőrizze, hogy az adatok helyesek-e.');
+        AlertWindow(`A bejelentkezés nem sikerült. Kérjük, ellenőrizze, hogy az adatok helyesek-e.`);
       }
     }
   };
 
-  const handleFacebookLogin = () => {
-    signInWithFacebook();
-  };
-
   return (
     <KeyboardAvoidingView style={styles.container}>
+      <View style={styles.topContainer}>
+        <Text style={styles.appName}>Vivida</Text>
+      </View>
       <View style={styles.inputContainer}>
-      <View style={styles.emailContainer}>
-        <TextInput
-          textContentType='emailAddress'
-          placeholder="Email cím"
-          placeholderTextColor={'#B7B7B7'}
-          value={email}
-          onChangeText={text => setEmail(text)}
-          style={styles.inputTop}
-          keyboardType='email-address'
-        />
-      </View>
-      <View style={styles.passwordContainer}>
-          <TextInput
-            textContentType='password'
-            placeholder="Jelszó"
-            placeholderTextColor={'#B7B7B7'}
-            value={password}
-            onChangeText={text => setPassword(text)}
-            style={styles.inputBottom}
-            secureTextEntry={!showPassword}
+        <Text style={styles.welcomeText}>Üdv újra itt!</Text>
+        <View style={styles.field}>
+          <TextInput 
+                label="Email cím"
+                textContentType='emailAddress'
+                value={email} 
+                onChangeText={text => setEmail(text)}
+                keyboardType='email-address'
+                style={[styles.fieldInside]}
+                theme={{ colors: { primary: '#958CAB', underlineColor: 'transparent' }}}
+                textColor='#FFF'
           />
-          <MaterialCommunityIcons
-              name={showPassword ? 'eye-off' : 'eye'}
-              color="#8562AC"
-              size={20}
-              onPress={changePasswordVisibility}
-              style={styles.iconContainer}
-          />
-      </View>
+        </View>
+        <View style={styles.field}>
+          <View style={styles.passwordContainer}>
+              <TextInput 
+                label="Jelszó"
+                textContentType='password'
+                value={password}
+                onChangeText={text => setPassword(text)}
+                style={styles.passwordField}
+                secureTextEntry={!showPassword}
+                theme={{ colors: { primary: '#958CAB', underlineColor: 'transparent' }}}
+                textColor='#FFF'
+              />
+              <IconButton
+                icon={showPassword ? 'eye-off' : 'eye'}
+                color="#8562AC"
+                size={20}
+                onPress={changePasswordVisibility}
+                style={styles.icon}
+              />
+          </View>
+        </View>
       </View>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity>
           <Pressable style={styles.loginButton} onPress={() => signIn(email,password)}>
-            <Text style={styles.loginButtonText}>BEJELENTKEZÉS</Text>
+            <Text style={styles.loginButtonText}>FOLYTATOM A FEJLŐDÉST</Text>
           </Pressable>
         </TouchableOpacity>
         <TouchableOpacity>
           <Pressable style={styles.passwordForgotButton} onPress={() => navigation.navigate('ForgotPassword')}>
-            <Text style={styles.passwordForgotButtonText}>ELFELEJTETTEM A JELSZAVAM</Text>
+            <Text style={styles.passwordForgotButtonText}>Elfelejtetted a jelszavad?</Text>
           </Pressable>
         </TouchableOpacity>
       </View>
 
       <View style={styles.bottomContainer}>
-        <Text style={styles.bottomText}>A Vivida-ba való bejelentkezéssel elfogadod a Használati feltételeinket és az Adatvédelmi nyilatkozatunkat.</Text>
+        <Text style={styles.bottomText}>Az alábbiak közül választok - FB, Google autentikáció?</Text>
       </View>
     </KeyboardAvoidingView>
   )
@@ -167,65 +184,72 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: '#fff'
+    backgroundColor: '#0B0A0C'
+  },
+
+  topContainer: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+
+  appName: {
+    fontSize: 42,
+    color: '#FFF',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    paddingBottom: 30
   },
 
   inputContainer:{
     margin: 15,
-    width: 320,
+    width: 350,
     flexDirection: 'column',
     justifyContent: 'center',
     marginLeft: 'auto',
     marginRight: 'auto',
-    //backgroundColor: '#F5F5F5',
-    //borderWidth: 1,
-    //borderColor: '#C9C9C9',
-    borderRadius: 7
   },
 
-  emailContainer: {
-    marginTop: 15,
-    marginBottom: 10,
-    width: 300,
-    flexDirection: 'column',
-    justifyContent: 'center',
+  welcomeText: {
+    fontSize: 28,
+    color: '#FFF',
     marginLeft: 'auto',
     marginRight: 'auto',
-    borderRadius: 7
+    paddingBottom: 10
   },
 
-  inputTop: {
+  field: {
+    borderColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#C9C9C9',
-    borderTopLeftRadius: 7,
-    borderTopRightRadius: 7,
-    padding: 13,
-    fontSize: 17,
-    color: '#BBBBBB'
+    borderRadius: 10,
+    marginTop: 20,
+    backgroundColor: '#0B0A0C',
+    paddingHorizontal: 10
   },
 
-  inputBottom: {
-    borderWidth: 1,
-    borderColor: '#C9C9C9',
-    borderBottomLeftRadius: 7,
-    borderBottomRightRadius: 7,
-    padding: 13,
-    fontSize: 17,
-    color: '#BBBBBB',
-    paddingRight: 227,
+  fieldInside: { 
+    backgroundColor: '#0B0A0C', 
+    paddingHorizontal: 5
   },
 
   passwordContainer: {
     flexDirection: 'row',
-    alignItems:  'center',
-    width: 300,
-    marginLeft: 20,
-    marginStart: 'auto',
     justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  
+  icon: {
+    position: 'absolute',
+    right: 1,
+    top: 5,
   },
 
-  iconContainer: {
-    marginLeft:3
+  passwordField: {
+    backgroundColor: '#0B0A0C',
+    width: 340,
+    paddingHorizontal: 10
   },
 
   buttonContainer: {
@@ -236,16 +260,18 @@ const styles = StyleSheet.create({
   },
 
   loginButton: {
-    width: 300,
+    width: 350,
     margin: 4,
-    padding: 13,
-    backgroundColor: '#E4E4E4',
-    borderRadius: 7
+    padding: 20,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#FFF',
+    borderRadius: 10
   },
 
   loginButtonText: {
-    fontSize: 18,
-    color: '#818181',
+    fontSize: 15,
+    color: '#FFF',
     marginLeft: 'auto',
     marginRight: 'auto'
   },
@@ -254,15 +280,15 @@ const styles = StyleSheet.create({
     width: 300,
     margin: 4,
     padding: 13,
-    //backgroundColor: '#E4E4E4',
-    //borderRadius: 7
+    justifyContent: 'center', 
+    marginLeft: 'auto',
+    marginRight: 'auto'
   },
 
   passwordForgotButtonText: {
-    fontSize: 18,
-    color: '#8562AC',
-    marginLeft: 'auto',
-    marginRight: 'auto'
+    fontSize: 14,
+    color: '#958CAB',
+    textAlign: 'center'
   },
 
   bottomContainer: {
@@ -272,18 +298,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end'
   },
 
-  logoStyle: {
-    width: 150,
-    height: 150,
-    marginLeft: 'auto',
-    marginRight: 'auto'
-  },
-
   bottomText: {
     width: 300,
     textAlign: 'center',
     marginLeft: 'auto',
     marginRight: 'auto',
-    color: '#6D6D6D'
-  }
+    color: '#958CAB'
+  },
+
 })

@@ -26,7 +26,7 @@ const StepCounter = () => {
     }, []);
 
     if (steps == 20) {
-        Alert.alert("Gratulálok", "Már " + `${steps}` + " lépést megtettél, hajráááá", [
+        Alert.alert("Gratulálok", "Már " + `${steps}` + " lépést megtettél, hajrá!", [
             {
                 text: 'OK',
             }
@@ -34,9 +34,9 @@ const StepCounter = () => {
     }
 
     return (
-        <View style={{ height: 200, alignItems: 'center', flex: 1, marginBottom: 30 }}>
-            <Text style={{ fontSize: 22, color: 'white', fontWeight: 'bold', marginTop: 60, textAlign: 'center' }}>Lépésszámláló</Text>
-            <Text style={{ fontSize: 16, color: 'white', textAlign: 'center' }}>{steps} lépés</Text>
+        <View style={{ height: 200, alignItems: 'center', flex: 1, marginBottom: 20 }}>
+            <Text style={{ fontSize: 22, color: 'white', fontWeight: 'bold', marginTop: 60, textAlign: 'center' }}>{steps} lépés</Text>
+            <Text style={{ fontSize: 16, color: 'white', textAlign: 'center' }}>A mai nap megtett lépések száma</Text>
         </View>
     );
 }
