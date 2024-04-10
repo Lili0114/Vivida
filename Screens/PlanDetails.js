@@ -46,7 +46,7 @@ const PlanDetails = ({route}) => {
         const planGoalsSnapshot = await getDocs(planGoalsCollection);
         planGoalsSnapshot.forEach(async (docSnapshot) => {
             const goalId = docSnapshot.id;
-            await setDoc(doc(db, `user_plan/${userPlanRef.id}/goals/${goalId}`), { completed: false });
+            await setDoc(doc(db, `user_plan/${userPlanRef.id}/goals/${goalId}`), { completed: false, completed_amount: 0, burned_calories: 0 });
         });
     
         Alert.alert("Siker", 'Terv kiválasztva!', [

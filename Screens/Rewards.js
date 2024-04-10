@@ -13,7 +13,7 @@ const Rewards = () => {
     const [length, setLength] = useState(0);
 
     useEffect(() => {
-        const fetchUserData = async () => {
+        /*const fetchUserData = async () => {
             const currentUserDoc = doc(collection(db, "users"), auth.currentUser.uid);
             const userDocSnap = await getDoc(currentUserDoc);
     
@@ -47,7 +47,7 @@ const Rewards = () => {
             }
         };
     
-        fetchUserData();
+        fetchUserData();*/
     }, [userData]);
 
     const handleXPIncrease = async () => {
@@ -106,7 +106,7 @@ const Rewards = () => {
                 <Text style={styles.regularText}>Itt találod az elérhető kuponokat, amiket pontjaid felhasználásával tudsz megszerezni</Text>
                 <TouchableOpacity>
                     <Pressable style={styles.xpButton} onPress={handleXPIncrease}>
-                        <Text style={{ padding: 15, color: 'white', textAlign: 'center'}}>Növeld az xp-d!</Text>
+                        <Text style={{ padding: 10, color: 'white', textAlign: 'center'}}>Növeld az xp-d!</Text>
                     </Pressable>
                 </TouchableOpacity>
             </View>

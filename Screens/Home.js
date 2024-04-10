@@ -1,22 +1,61 @@
-//Home.js
 import { Text, StyleSheet, View, Animated, Pressable, ScrollView } from 'react-native';
-import React, { Component, useEffect, useContext, useState } from 'react';
+import React, { Component, useEffect, useReducer, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Image } from 'react-native-elements';
 import { db, auth } from '../Services/firebase';
-import { collection, updateDoc, getDoc, doc, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, query, where } from "firebase/firestore";
 import StepCounter from './StepCounter';
 import storage from '@react-native-firebase/storage';
 import messaging from '@react-native-firebase/messaging';
 import { NotificationContext } from '../NotificationProvider';
 import { FlatList, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const Home = () => {
-    const [userData, setUserData] = useState(null);
-    const [imageUrls, setImageUrls] = useState([]);
+const initialState = {
+    imageUrls: [],
+    userData: null,
+    chosenPlan: null,
+    goals: [],
+    length: 0,
+    progress: 0,
+    previousUserLevel: null,
+    currentUserLevel: null,
+    lastFetch: new Date(),
+};
+
+function reducer(state, action) {
+    switch (action.type) {
+        case 'SET_IMAGE_URLS':
+            return { ...state, imageUrls: action.payload };
+        case 'SET_USER_DATA':
+            return { ...state, userData: action.payload };
+        case 'SET_CHOSEN_PLAN':
+            return { ...state, chosenPlan: action.payload };
+        case 'SET_GOALS':
+            return { ...state, goals: action.payload };
+        case 'SET_LENGTH':
+            return { ...state, length: action.payload };
+        case 'SET_PROGRESS':
+            return { ...state, progress: action.payload };
+        case 'SET_PREVIOUS_USER_LEVEL':
+            return { ...state, previousUserLevel: action.payload };
+        case 'SET_CURRENT_USER_LEVEL':
+            return { ...state, currentUserLevel: action.payload };
+        case 'SET_LAST_FETCH':
+            return { ...state, lastFetch: action.payload };
+        default:
+            throw new Error();
+    }
+}
+
+const Home = ({navigation}) => {
+
+    const [state, dispatch] = useReducer(reducer, initialState);
 
     useEffect(() => {
-        const fetchImages = async () => {
+
+        /*const fetchImages = async () => {
             const list = await storage().ref('/badges').listAll();
             const urls = await Promise.all(list.items.map(async (ref) => {
                 const url = await ref.getDownloadURL();
@@ -29,60 +68,244 @@ const Home = () => {
             setImageUrls(imageUrlMap);
         };
     
-        fetchImages().catch((e) => console.log('Errors while downloading => ', e));
-    }, []);
+        fetchImages().catch((e) => console.log('Errors while downloading => ', e));*/
+
+        const userData = async () => {
+            const currentUserDoc = doc(collection(db, "users"), auth.currentUser.uid);
+            const userDocSnap = await getDoc(currentUserDoc);
+        
+            if (userDocSnap.exists()) {
+                dispatch({ type: 'SET_USER_DATA', payload: userDocSnap.data() });
+        
+                const levelsCollection = collection(db, 'levels');
+                const levelsSnapshot = await getDocs(levelsCollection);
+                const levelsData = levelsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));    
+                const currentLevel = levelsData.find(level => parseInt(level.id, 10) == userDocSnap.data().level);
+                const currentLevelDocSnap = await getDoc(doc(collection(db, "levels"), currentLevel.id));
+        
+                if (currentLevel.id > 1) {
+                    const previousLevel = levelsData.find(level => parseInt(level.id, 10) == userDocSnap.data().level-1);
+                    const previousLevelDocSnap = await getDoc(doc(collection(db, "levels"), previousLevel.id));
+                    
+                    const length = currentLevel.requiredXP - previousLevel.requiredXP;
+                    const progress = ((userDocSnap.data().xp - previousLevel.requiredXP) / length) * 100;
+                    dispatch({ type: 'SET_LENGTH', payload: length });
+                    dispatch({ type: 'SET_PROGRESS', payload: progress });
+                    dispatch({ type: 'SET_CURRENT_USER_LEVEL', payload: currentLevelDocSnap.data() });
+                    dispatch({ type: 'SET_PREVIOUS_USER_LEVEL', payload: previousLevelDocSnap.data() });
+                }
+                else{
+                    const previousLevel = { id: '0', requiredXP: 0 };
+                    const length = currentLevel.requiredXP;
+                    const progress = (userDocSnap.data().xp / length) * 100;
+                    dispatch({ type: 'SET_LENGTH', payload: length });
+                    dispatch({ type: 'SET_PROGRESS', payload: progress });
+                    dispatch({ type: 'SET_CURRENT_USER_LEVEL', payload: currentLevelDocSnap.data() });
+                    dispatch({ type: 'SET_PREVIOUS_USER_LEVEL', payload: previousLevel });
+                }
+            } else {
+                console.log("A felhasználó dokumentuma nem található.");
+            }
+        };
+
+        const planAndGoals = async () => {
+            // Kiválasztott terv
+            const userPlanCollection = collection(db, 'user_plan');
+            const q = query(userPlanCollection, where('user_id', '==', auth.currentUser.uid));
+            const querySnapshot = await getDocs(q);
+            if (querySnapshot.empty) {
+                return;
+            }
+        
+            const userPlan = querySnapshot.docs[0].data();
+            const planRef = doc(db, 'plans', userPlan.plan_id);
+            const planSnapshot = await getDoc(planRef);
+            const plan = { id: planSnapshot.id, ...planSnapshot.data() };
+            dispatch({ type: 'SET_CHOSEN_PLAN', payload: plan });
+        
+            // A terv céljai, adatai
+            const goalsCollection = collection(planRef, 'goals');
+            const goalsSnapshot = await getDocs(goalsCollection);
+            const goalsData = goalsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            dispatch({ type: 'SET_GOALS', payload: goalsData });
+        };
+
+        const fetchData = async () => {
+            await userData();
+            await planAndGoals();
+            dispatch({ type: 'SET_LAST_FETCH', payload: Date.now() });
+        };
+        
+        //fetchData();
+        
+        const intervalId = setInterval(() => {
+            fetchData();
+        }, 10000);
+        
+        return () => {
+            clearInterval(intervalId);
+        };
+        
+      }, [state.userData, state.chosenPlan]);
+
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView>
-                <StepCounter/>
-
-                {/* Csak akkor kell ezt megjeleníteni, ha van aktuális, VAGY ha nincs, kiírni, hogy jelenleg nincsen kihívás. */}
-                <View style={styles.taskContainer}>
-                    <Text style={styles.header}>NAPI KIHÍVÁS ÉRHETŐ EL!</Text>
-                    <View style={styles.goalContainer}>
-                        <Text style={styles.xpText}>35 xp</Text>
-                        <Text style={styles.goalText}>
-                            A héten fuss le 15 km-t! </Text>
-                        <Text style={[styles.goalText, {color: '#958CAB'}]}> 6 / 15</Text>
-                        {/*<Text style={styles.goalText}>{'\n'}Hátralévő idő: x</Text>*/}
+                <View style={styles.topContainer}>
+                    <View style={{ alignItems: 'center', marginBottom: 10 }}>
+                        <Image
+                            style={{ borderRadius: 100, width: 100, height: 100 }}
+                            source={ state.userData && state.userData.profilePicture !== "" 
+                            ? {uri: state.userData.profilePicture} 
+                            : require('../assets/images/blank-profile-picture.png')  } />
+                        <Text style={{ color: '#FFF', fontSize: 16, marginTop: 10}}>{state.userData ? `${state.userData.username}` : "Betöltés..."}</Text>
+                        <Text style={{ color: '#FFF', fontSize: 16}}>{state.userData && state.userData.level ? `${state.userData.level}. szint` : "0. szint"}</Text>
+                        <View style={styles.progressBar}>
+                            <View style={[styles.progress, { width: `${state.progress}%` }]} />
+                        </View>
+                        <View style={{ flexDirection: 'row'}}>
+                            <Text style={{ color: '#C5FE37', fontSize: 12, fontStyle: 'italic'}}>{state.userData ? `${state.userData.xp} XP ` : "-"}</Text>
+                            <Text style={{ color: '#958CAB', fontSize: 12, fontStyle: 'italic'}}>/</Text>
+                            <Text style={{ color: '#958CAB', fontSize: 12, fontStyle: 'italic'}}>{state.userData && state.currentUserLevel ? ` ${state.currentUserLevel.requiredXP} XP` : "-"}</Text>
+                        </View>
                     </View>
                 </View>
 
+                <StepCounter/>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 40, padding: 5 }}>
+                    <View style={{ alignItems: 'center'}}>
+                        <MaterialCommunityIcons
+                            name='clock-outline'
+                            size={50}
+                            color='#FFF'
+                        />
+                        <Text style={[styles.statText, { color: '#C5FE37'}]}>72</Text>
+                        <Text style={[styles.statText, { color: '#958CAB'}]}>óra</Text>
+                    </View>
+                    <View style={{ alignItems: 'center'}}>
+                        <MaterialCommunityIcons
+                            name='heart-pulse'
+                            size={50}
+                            color='#FFF'
+                        />
+                        <Text style={[styles.statText, { color: '#C5FE37'}]}>32</Text>
+                        <Text style={[styles.statText, { color: '#958CAB'}]}>edzés</Text>
+                    </View>
+                    <View style={{ alignItems: 'center'}}>
+                        <MaterialCommunityIcons
+                            name='fire'
+                            size={50}
+                            color='#FFF'
+                        />
+                        <Text style={[styles.statText, { color: '#C5FE37'}]}>2600</Text>
+                        <Text style={[styles.statText, { color: '#958CAB'}]}>kcal</Text>
+                    </View>
+                </View>
+
+                {/* Csak akkor kell ezt megjeleníteni, ha van aktuális, VAGY ha nincs, kiírni, hogy jelenleg nincsen kihívás. */}
                 <View style={styles.taskContainer}>
-                    <Text style={styles.header}>KIEMELT JUTALMAK</Text>
+                    <Text style={styles.header}>KIHÍVÁS ELÉRHETŐ</Text>
+                    <View style={styles.challengeContainer}>
+                        <Text style={styles.challengeXp}>35 xp</Text>
+                        <View style={{ flexDirection: 'column', justifyContent: 'space-around', width: 220}}>
+                            <Text style={styles.challengeText}>Hajts végre 50 darab felülést!</Text>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <Text style={[styles.challengeText, {color: '#958CAB', marginRight: 10}]}>0 / 50</Text>
+                                <Text style={[styles.challengeText, {color: '#958CAB', marginLeft: 60}]}>22ó 40p</Text>
+                            </View>
+                        </View>
+                        <View style={[styles.arrowContainer, { maxHeight: 60}]}>
+                            <Ionicons
+                                name='arrow-forward-outline'
+                                size={30}
+                                color={'#C5FE37'}/>
+                        </View>
+                    </View>
+                    
+                </View>
+
+                <View style={styles.taskContainer}>
+                    <Text style={styles.header}>LEGÚJABB JUTALMAK</Text>
                     <View style={styles.rewardContainer}>
-                        <Text style={styles.rewardText}>10%-os kuponod van a {'\n'}Gymesco edzőterembe.</Text>
+                        <Text style={styles.rewardText}>10%-os kuponod van a Gymesco edzőterembe.</Text>
                     </View>
                     <View style={styles.rewardContainer}>
                         <Text style={styles.rewardText}>
-                            Tegnapi nap folyamán {'\n'}
-                            megszerezted a "lelkes {'\n'}
+                            Tegnapi nap folyamán
+                            megszerezted a "lelkes
                             sportoló" kitüntetést.</Text>
                     </View>
                 </View>
 
                 <View style={styles.taskContainer}>
                     <Text style={styles.header}>AKTUÁLIS CÉLOK</Text>
-                    <View style={styles.goalContainer}>
-                        <Text style={styles.xpText}>35 xp</Text>
-                        <Text style={styles.goalText}>
-                            A héten fuss le 15 km-t! </Text>
-                        <Text style={[styles.goalText, {color: '#958CAB'}]}> 6 / 15</Text>
-                    </View>
+
+                    {state.chosenPlan ? (
+                    <>
+                        {state.goals.slice(0,3).map((goal) => (
+
+                            <View key={goal.id} style={styles.goalContainer}>
+                                <Text style={styles.xpText}>{goal.xp} xp</Text>
+                                <View style={{ flexDirection: 'column', justifyContent: 'space-evenly' }}>
+                                    <Text style={styles.goalText}>{goal.description}</Text>
+                                    <Text style={[styles.goalText, {color: '#958CAB'}]}>0 / {goal.condition.amount}</Text>
+                                </View>
+                            </View>
+                        ))} 
+
+                        {state.goals.length > 3 && 
+                            <View style={styles.otherGoals}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <Text style={styles.regularText}>Tekintsd meg az összes célt!</Text>
+                                    <View style={[styles.arrowContainer, {borderColor: '#C5FE37', marginLeft: 50}]}>
+                                        <Ionicons
+                                            name='arrow-forward-outline'
+                                            size={30}
+                                            color={'#C5FE37'}
+                                            onPress={() => navigation.navigate('Célok')}/>
+                                    </View>
+                                </View>
+                            </View>
+                        }
+                    </>
+                    ) : (
+                        <Text style={styles.regularText}>Válassz ki egy tervet, hogy tudj célokat teljesíteni!</Text>
+                    )}
+
                 </View>
 
                 <View style={styles.taskContainer}>
                     <Text style={styles.header}>HETI STATISZTIKÁK</Text>
                     <View style={styles.rewardContainer}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <View>
-                                <Text style={styles.statText}>Elégetett kalória:</Text>
-                                <Text style={styles.statText}>Teljesített kihívások:</Text>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 20 }}>
+                            <View style={{ alignItems: 'center'}}>
+                                <MaterialCommunityIcons
+                                    name='clock-outline'
+                                    size={50}
+                                    color='#FFF'
+                                />
+                                <Text style={[styles.statText, { color: '#C5FE37'}]}>8</Text>
+                                <Text style={[styles.statText, { color: '#958CAB'}]}>óra</Text>
                             </View>
-                            <View>
-                                <Text style={styles.statText}> x kcal </Text>
-                                <Text style={styles.statText}> y db </Text>
+                            <View style={{ alignItems: 'center'}}>
+                                <MaterialCommunityIcons
+                                    name='heart-pulse'
+                                    size={50}
+                                    color='#FFF'
+                                />
+                                <Text style={[styles.statText, { color: '#C5FE37'}]}>3</Text>
+                                <Text style={[styles.statText, { color: '#958CAB'}]}>edzés</Text>
+                            </View>
+                            <View style={{ alignItems: 'center'}}>
+                                <MaterialCommunityIcons
+                                    name='fire'
+                                    size={50}
+                                    color='#FFF'
+                                />
+                                <Text style={[styles.statText, { color: '#C5FE37'}]}>760</Text>
+                                <Text style={[styles.statText, { color: '#958CAB'}]}>kcal</Text>
                             </View>
                         </View>
                         <Pressable /*onPress*/>
@@ -105,13 +328,15 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'column',
         backgroundColor: '#0B0A0C',
+        //backgroundColor: 'red',
         marginBottom: 20
     },
 
     topContainer: {
-        //flex: 1,
-        marginVertical: 15,
-        flexDirection: 'column'
+        //flex: 1, 3?
+        marginVertical: 10,
+        flexDirection: 'column',
+        justifyContent: 'center'
     },
 
     progressContainer: {
@@ -122,8 +347,10 @@ const styles = StyleSheet.create({
 
     regularText: {
         fontSize: 15,
-        paddingHorizontal: 15,
+        paddingHorizontal: 5,
         color: "#FFFFFF",
+        textAlign: 'center',
+        textAlignVertical: 'center'
     },
 
     rewardContainer: {
@@ -132,7 +359,29 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginTop: 10,
         marginHorizontal: 20,
-        padding: 5
+        padding: 5,
+    },
+
+    otherGoals: {
+        borderWidth: 1,
+        borderColor: '#958CAB',
+        borderRadius: 10,
+        marginTop: 10,
+        marginHorizontal: 20,
+        paddingLeft: 5
+    },
+
+    arrowContainer: {
+        borderWidth: 1,
+        borderColor: '#958CAB',
+        borderRadius: 10,
+        padding: 10,
+        width: 80,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 10,
+        //marginRight: 20,
+        flex: 1,
     },
 
     goalContainer: {
@@ -141,7 +390,14 @@ const styles = StyleSheet.create({
         padding: 5,
         flexDirection: 'row',
         justifyContent: 'flex-start',
-        
+    },
+
+    challengeContainer: {
+        marginTop: 10,
+        marginHorizontal: 10,
+        padding: 5,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
     },
 
     xpText:{
@@ -149,15 +405,30 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#958CAB',
         color: '#C5FE37',
-        paddingHorizontal: 5,
-        paddingVertical: 12,
-        textAlign: 'center'
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        width: 50,
+        height: 50,
+    },
+
+    challengeXp: {
+        borderRadius: 30,
+        borderWidth: 1,
+        borderColor: '#958CAB',
+        color: '#C5FE37',
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        width: 50,
+        height: 50,
+        
+        //flex: 1,
     },
 
     rewardText: {
         fontSize: 15,
         paddingHorizontal: 5,
         color: "#FFFFFF",
+        marginRight: 150,
     },
 
     statText: {
@@ -170,7 +441,17 @@ const styles = StyleSheet.create({
         fontSize: 15,
         paddingHorizontal: 5,
         color: "#FFFFFF",
-        marginLeft: 10
+        marginLeft: 10,
+        marginRight: 70
+    },
+
+    challengeText: {
+        fontSize: 15,
+        paddingHorizontal: 5,
+        color: "#FFFFFF",
+        marginLeft: 10,
+
+        flex: 3
     },
 
     boldText: {
@@ -179,21 +460,18 @@ const styles = StyleSheet.create({
     },
 
     header: {
-        fontSize: 20,
+        fontSize: 24,
         paddingTop: 20,
         paddingHorizontal: 15,
         color: '#C5FE37'
     },
 
     progressBar: {
-        height: 20,
-        width: 'auto',
-        borderRadius: 10,
         marginVertical: 15,
-        marginHorizontal: 15,
-        backgroundColor: '#fff',
-        borderWidth: 2,
-        borderColor: '#ADCEE8'
+        height: 3,
+        backgroundColor: '#958CAB',
+        borderRadius: 5,
+        width: '50%',
     },
 
     iconsContainer: {
@@ -238,7 +516,7 @@ const styles = StyleSheet.create({
 
     taskContainer: {
         flex: 2,
-        flexDirection: 'column'
+        flexDirection: 'column',
     },
 
     containerScrollView: {
@@ -249,7 +527,13 @@ const styles = StyleSheet.create({
     quizCards: {
         height: 200,
         width: 180
-    }
+    },
+
+    progress: {
+        height: '100%',
+        borderRadius: 5,
+        backgroundColor: '#C5FE37',
+    },
 })
 
 export default Home

@@ -50,7 +50,7 @@ const Goals = () => {
             </View>
                 {chosenPlan ? (
                     <>
-                        <Text style={styles.header}>{chosenPlan.name}</Text>
+                        <Text style={styles.header}>{chosenPlan.type} - {chosenPlan.difficulty} szint</Text>
                         {goals.map((goal) => (
                             <View key={goal.id} style={styles.goalContainer}>
                                 <Text style={styles.goalText}>{goal.description}</Text>
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        backgroundColor: '#DDC0FA',
+        backgroundColor: '#0B0A0C',
     },
 
     topContainer: {
@@ -98,7 +98,8 @@ const styles = StyleSheet.create({
     header: {
         fontSize: 30,
         paddingTop: 20,
-        paddingHorizontal: 15
+        paddingHorizontal: 15,
+        color: '#FFF'
     },
 
     progressBar: {

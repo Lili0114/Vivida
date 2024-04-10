@@ -34,9 +34,8 @@ const StepCounter = () => {
     }
 
     return (
-        <View style={{ height: 200, alignItems: 'center', flex: 1, marginBottom: 20 }}>
-            <Text style={{ fontSize: 22, color: 'white', fontWeight: 'bold', marginTop: 60, textAlign: 'center' }}>{steps} lépés</Text>
-            <Text style={{ fontSize: 16, color: 'white', textAlign: 'center' }}>A mai nap megtett lépések száma</Text>
+        <View style={{ height: 50, justifyContent: 'center', alignItems: 'center', flex: 1, marginBottom: 10, backgroundColor: '#0B0A0C' }}>
+            <Text style={{ fontSize: 22, color: '#C5FE37', textAlign: 'center' }}>{steps} lépés</Text>
         </View>
     );
 }

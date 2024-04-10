@@ -1,51 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { IconButton, TextInput } from 'react-native-paper';
-import { KeyboardAvoidingView, Pressable, StyleSheet, Text, TouchableOpacity, View, Alert, Linking } from 'react-native';
+import { KeyboardAvoidingView, Pressable, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { auth } from '../Services/firebase';
-import { updatePassword, confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
+import { updatePassword } from 'firebase/auth';
 import 'firebase/firestore';
-import { NavigationContainer } from '@react-navigation/native';
 
-const linking = {
-    prefixes: ['vivida-57f19.firebaseapp://', 'https://vivida-57f19.firebaseapp.com'],
-    config: {
-      screens: {
-        PasswordReset: 'reset-password/:oobCode',
-      },
-    },
-  };
-
-const PasswordReset = ({navigation, route}) => {
+const PasswordReset = ({navigation}) => {
   const [password, setPassword] = useState('');
   const [passwordAgain, setPasswordAgain] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordAgain, setShowPasswordAgain] = useState(false);
-
-  useEffect(() => {
-    //const code = new URLSearchParams(useLocation().search).get('oobCode');
-    const code = route.params.oobCode;
-    Linking.getInitialURL().then(url => {
-        code = new URL(url).searchParams.get('oobCode');
-    });
-
-    verifyPasswordResetCode(auth, code)
-      .then((email) => {
-        console.log("siker juhé");
-      })
-      .catch((error) => {
-        console.log("nem jó");
-      });
-  }, []);
   
   const changePasswordVisibility = () => { 
-      setShowPassword(!showPassword);
+    setShowPassword(!showPassword);
   };
   const changePasswordAgainVisibility = () => { 
     setShowPasswordAgain(!showPasswordAgain);
 };
  
-  function AlertWindow (message) {
-    Alert.alert("Hiba", message, [
+  function AlertWindow (title, message) {
+    Alert.alert(title, message, [
         {
             text: 'OK',
         }
@@ -54,11 +28,11 @@ const PasswordReset = ({navigation, route}) => {
 
   const validateInputs = (password, passwordAgain) => {
     if (password.trim() === '' || passwordAgain.trim() === '') {
-        AlertWindow('Jelszó nem lehet üres!');
+        AlertWindow('Hiba','Jelszó nem lehet üres!');
         return false;
     }
     else if(password !== passwordAgain){
-        AlertWindow('A két jelszó nem egyezik!');
+        AlertWindow('Hiba','A két jelszó nem egyezik!');
         return false;
     }
     else if(password.length < 6 || passwordAgain.length < 6){
@@ -69,37 +43,27 @@ const PasswordReset = ({navigation, route}) => {
   };
   
   const changePassword = () => {
-    if (validateInputs(password, passwordAgain)) {
-        const code = route.params.oobCode;
-
-        confirmPasswordReset(auth, code, password)
+    if (!validateInputs(password, passwordAgain)) {
+      return;
+    }
+    else {
+      updatePassword(auth.currentUser, password)
         .then(() => {
-          AlertWindow("Sikerrr");
-          //navigation.navigate('Login');
+          AlertWindow('Siker',"Sikeres módosítás!");
         })
         .catch((error) => {
-          AlertWindow("aaaa");
+          AlertWindow('Hiba', "Valami hiba történt, kérlek próbáld meg újra.");
         });
-
-        /*updatePassword(user, password)
-            .then(() => {
-            AlertWindow("Sikerrr");
-            //navigation.navigate('Login');
-            })*/
-    }
-    else{
-        AlertWindow("Nem sikerült a jelszó megváltoztatása.");
     }
   }
 
   return (
-    <NavigationContainer linking={linking}>
     <KeyboardAvoidingView style={styles.container}>
       <View style={styles.inputContainer}>
-      <Text style={styles.titleText}>Új jelszó megadása</Text>
-      <Text style={styles.caption}>
-        Jegyezd meg az új jelszavad, és ügyelj, {'\n'} 
-        hogy más ne férjen hozzá!</Text>
+        <Text style={styles.titleText}>Új jelszó megadása</Text>
+        <Text style={styles.caption}>
+          Jegyezd meg az új jelszavad, és ügyelj, {'\n'} 
+          hogy más ne férjen hozzá!</Text>
         <View style={styles.passwordContainer}>
             <TextInput 
                 label="Új jelszó"
@@ -108,6 +72,8 @@ const PasswordReset = ({navigation, route}) => {
                 onChangeText={text => setPassword(text)}
                 style={styles.passwordField}
                 secureTextEntry={!showPassword}
+                theme={{ colors: { primary: '#958CAB', underlineColor: 'transparent' }}}
+                textColor='#FFF'
             />
             <IconButton
               icon={showPassword ? 'eye-off' : 'eye'}
@@ -125,6 +91,8 @@ const PasswordReset = ({navigation, route}) => {
                 onChangeText={text => setPasswordAgain(text)}
                 style={styles.passwordField}
                 secureTextEntry={!showPasswordAgain}
+                theme={{ colors: { primary: '#958CAB', underlineColor: 'transparent' }}}
+                textColor='#FFF'
             />
             <IconButton
               icon={showPasswordAgain ? 'eye-off' : 'eye'}
@@ -136,15 +104,12 @@ const PasswordReset = ({navigation, route}) => {
         </View>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity>
-          <Pressable style={styles.loginButton} onPress={() => changePassword()}>
-            <Text style={styles.loginButtonText}>MENTÉS</Text>
-          </Pressable>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity >
+        <Pressable style={styles.loginButton} onPress={() => changePassword()}>
+          <Text style={styles.loginButtonText}>MENTÉS</Text>
+        </Pressable>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
-    </NavigationContainer>
   )
 }
 
@@ -154,7 +119,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    backgroundColor: '#fff',
+    backgroundColor: '#0B0A0C',
     justifyContent: 'center',
     alignItems: 'center'
   },
@@ -169,7 +134,7 @@ const styles = StyleSheet.create({
 
   titleText: {
     fontSize: 28,
-    color: '#818181',
+    color: '#fff',
     marginLeft: 'auto',
     marginRight: 'auto',
     paddingBottom: 10
@@ -177,7 +142,7 @@ const styles = StyleSheet.create({
 
   caption: {
     fontSize: 18,
-    color: '#818181',
+    color: '#fff',
     marginLeft: 'auto',
     marginRight: 'auto',
     textAlign: 'center',
@@ -189,7 +154,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     marginTop: 20,
-    backgroundColor: '#E4E4E4',
+    backgroundColor: '#0B0A0C',
     paddingHorizontal: 10
   },
 
@@ -207,50 +172,30 @@ const styles = StyleSheet.create({
   },
 
   passwordField: {
-    borderColor: '#4632A1',
+    borderColor: '#FFF',
     borderWidth: 1,
     borderRadius: 10,
     marginTop: 20,
-    backgroundColor: '#E4E4E4',
-    width: 350,
-    paddingHorizontal: 10
-  },
-
-  buttonContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
-    marginLeft: 'auto',
-    marginRight: 'auto'
+    backgroundColor: '#0B0A0C',
+    paddingHorizontal: 10,
+    width: 350
   },
 
   loginButton: {
     width: 350,
     margin: 4,
     padding: 20,
-    backgroundColor: '#E4E4E4',
+    backgroundColor: '#0B0A0C',
+    borderWidth: 1,
+    borderColor: '#C5FE37',
     borderRadius: 10
   },
 
   loginButtonText: {
     fontSize: 15,
-    color: '#818181',
+    color: '#FFF',
     marginLeft: 'auto',
     marginRight: 'auto'
-  },
-
-  passwordForgotButton: {
-    width: 300,
-    margin: 4,
-    padding: 13,
-    justifyContent: 'center', 
-    marginLeft: 'auto',
-    marginRight: 'auto'
-  },
-
-  passwordForgotButtonText: {
-    fontSize: 14,
-    color: '#8562AC',
-    textAlign: 'center'
   },
 
 })

@@ -19,6 +19,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AfterRegister from './Screens/AfterRegister';
 import AfterRegisterDetails from './Screens/AfterRegisterDetails';
 import PasswordReset from './Screens/PasswordReset';
+import AccountEdit from './Screens/AccountEdit';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -64,9 +65,12 @@ function Tabs() {
           ),
         }} 
       />
-      <Tab.Screen name='Tervek' component={Plans}
+      <Tab.Screen name='Edzéstervek' component={Plans}
         options={{ 
-          headerShown: false, 
+          headerShown: true,
+          headerTitleAlign: 'center',
+          headerStyle: {backgroundColor: '#0B0A0C'},
+          headerTitleStyle: {color: '#C5FE37', fontSize: 24}, 
           tabBarIcon: ({focused}) => (
             <View style={{ 
               borderRadius: 30,
@@ -109,9 +113,12 @@ function Tabs() {
           ),
         }}  
       />
-      <Tab.Screen name='Jutalmak' component={Rewards}
+      <Tab.Screen name='Teljesítményeid' component={Rewards}
         options={{ 
-          headerShown: false, 
+          headerShown: false,
+          headerTitleAlign: 'center',
+          headerStyle: {backgroundColor: '#0B0A0C'},
+          headerTitleStyle: {color: '#C5FE37', fontSize: 24}, 
           tabBarIcon: ({focused}) => (
             <View style={{ 
               borderRadius: 30,
@@ -124,9 +131,12 @@ function Tabs() {
           ),
         }}  
       />
-      <Tab.Screen name='Profil' component={Account}
+      <Tab.Screen name='Beállítások' component={Account}
         options={{ 
-          headerShown: false, 
+          headerShown: true,
+          headerTitleAlign: 'center',
+          headerStyle: {backgroundColor: '#0B0A0C'},
+          headerTitleStyle: {color: '#C5FE37', fontSize: 24},
           tabBarIcon: ({focused}) => (
             <View style={{ 
               borderRadius: 30,
@@ -190,6 +200,17 @@ const App = () => {
         <Stack.Screen
           name="PasswordReset"
           component={PasswordReset}
+          options={{
+            title: '',
+            headerStyle: {
+              backgroundColor: '#0B0A0C'
+            },
+            headerTintColor: '#FFF'
+          }} />
+
+        <Stack.Screen
+          name="AccountEdit"
+          component={AccountEdit}
           options={{
             title: '',
             headerStyle: {

@@ -2,26 +2,37 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View, Pressable, KeyboardAvoidingView, Alert, ScrollView, PermissionsAndroid } from 'react-native';
 import { auth, db } from '../Services/firebase';
 import { IconButton, TextInput } from 'react-native-paper';
-import { doc, setDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { doc, getDoc, setDoc, collection, getDocs, query, where, updateDoc } from "firebase/firestore";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {Picker} from '@react-native-picker/picker';
 import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import { Image } from 'react-native-elements';
 
-const AfterRegisterDetails = ({navigation}) => {
+const AccountEdit = ({navigation, route}) => {
+    const {userData} = route.params;
+    const [originalUsername, setOriginalUsername] = useState('');
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+            setOriginalUsername(userDoc.data().username);
+        };
+    
+        fetchUserData();
+    }, [imageUri]);
 
     //Kötelező
-    const [username, setUsername] = useState('');
-    const [birthdate, setBirthdate] = useState(new Date());
-    const [birthdateString, setBirthdateString] = useState('');
+    const [username, setUsername] = useState(userData ? `${userData.username}` : '');
+    const [birthdate, setBirthdate] = useState(userData ? userData.birthdate.toDate() : new Date());
+    const [birthdateString, setBirthdateString] = useState(userData ? userData.birthdate.toDate().toLocaleDateString() : '');
 
     //Opcionális    
-    const [fullName, setFullName] = useState('');
-    const [gender, setGender] = useState('female');
-    const [height, setHeight] = useState(0.0);
-    const [weight, setWeight] = useState(0.0);
-    const [imageUri, setImageUri] = useState('');
+    const [fullName, setFullName] = useState(userData ? userData.fullName : '');
+    const [gender, setGender] = useState(userData ? userData.gender : 'female');
+    const [height, setHeight] = useState(userData ? userData.height : 0.0);
+    const [weight, setWeight] = useState(userData ? userData.weight : 0.0);
+    const [imageUri, setImageUri] = useState(userData ? userData.profilePicture : '');
 
     const [showDatePicker, setShowDatePicker] = useState(false);
 
@@ -82,6 +93,10 @@ const AfterRegisterDetails = ({navigation}) => {
     };
 
     const usernameAlreadyExists = async (username) => {
+        if (username === originalUsername) {
+            return false;
+        }
+    
         const usernameQuery = query(collection(db, "users"), where("username", "==", username));
         const usernameExists = (await getDocs(usernameQuery)).docs.length > 0;
         
@@ -116,16 +131,15 @@ const AfterRegisterDetails = ({navigation}) => {
         return true;
     };
 
-    const setDetails = async (username, birthdate, fullName, gender, height, weight) => {
-
+    const updateDetails = async (username, birthdate, fullName, gender, height, weight) => {
         if (auth.currentUser == null || await validateInputs(username, birthdate, fullName, gender) == false 
             || await usernameAlreadyExists(username)) {
             return;
         }
         else{
             try {
-
-                const newUser = {
+                const userRef = doc(db, "users", auth.currentUser.uid);
+                const updatedUser = {
                     email: auth.currentUser.email,
                     username: username,
                     birthdate: birthdate,
@@ -137,9 +151,10 @@ const AfterRegisterDetails = ({navigation}) => {
                     xp: 0,
                     profilePicture: imageUri
                 };
-                setDoc(doc(db, "users", auth.currentUser.uid), newUser)
+
+                updateDoc(userRef, updatedUser)
                 .then(() => {    
-                    navigation.navigate('HomePage');
+                    navigation.navigate('Beállítások');
                 });
             } catch (error) {
                 AlertWindow('Hiba',`Hiba lépett fel az adatok megadása során! ${error}`);
@@ -155,7 +170,9 @@ const AfterRegisterDetails = ({navigation}) => {
                 <View style={styles.topContainer}>
                     <Image
                         style={{ borderRadius: 100, width: 130, height: 130 }}
-                        source={imageUri ? {uri: imageUri} : require('../assets/images/blank-profile-picture.png')}
+                        source={ userData && userData.profilePicture !== "" 
+                            ? {uri: imageUri} 
+                            : require('../assets/images/blank-profile-picture.png')  }
                     />
                     <Pressable onPress={uploadImage}>
                         <Text style={{color: '#48454c', fontSize: 12, padding: 10}}>Profilkép feltöltése</Text>
@@ -188,7 +205,10 @@ const AfterRegisterDetails = ({navigation}) => {
                     <Picker        
                         selectedValue={gender}
                         dropdownIconColor={'#FFF'}
-                        onValueChange={(itemValue, itemIndex) => setGender(itemValue)}
+                        onValueChange={(itemValue) => {
+                            console.log(`Kiválaszt: ${itemValue}`);
+                            setGender(itemValue);
+                        }}
                     >
                         <Picker.Item label="Nő" value="female" color="#958CAB" style={{fontSize: 16}}/>
                         <Picker.Item label="Férfi" value="male" color="#958CAB" style={{fontSize: 16}}/>
@@ -254,8 +274,8 @@ const AfterRegisterDetails = ({navigation}) => {
 
             <View style={styles.buttonContainer}>
                 <TouchableOpacity>
-                    <Pressable style={styles.loginButton} onPress={() => setDetails(username, birthdate, fullName, gender, height, weight)}>
-                        <Text style={styles.loginButtonText}>TOVÁBB</Text>
+                    <Pressable style={styles.loginButton} onPress={() => updateDetails(username, birthdate, fullName, gender, height, weight)}>
+                        <Text style={styles.loginButtonText}>MÓDOSÍTÁS</Text>
                     </Pressable>
                 </TouchableOpacity>
             </View>
@@ -264,7 +284,7 @@ const AfterRegisterDetails = ({navigation}) => {
     )
 }
 
-export default AfterRegisterDetails
+export default AccountEdit
 
 const styles = StyleSheet.create({
     container: {
@@ -319,7 +339,8 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'center',
         marginLeft: 'auto',
-        marginRight: 'auto'
+        marginRight: 'auto',
+        marginBottom: 30
       },
     
       loginButton: {
