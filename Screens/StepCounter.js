@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { accelerometer, setUpdateIntervalForType, SensorTypes } from "react-native-sensors";
 import { map, filter } from "rxjs/operators";
+import { showToast } from './Notification';
+import { useNotificationsEnabled } from './NotificationsEnabledContext';
 
 const StepCounter = () => {
     const [steps, setSteps] = useState(0);
+    const { notificationsEnabled, setNotificationsEnabled } = useNotificationsEnabled();
 
     useEffect(() => {
         setUpdateIntervalForType(SensorTypes.accelerometer, 400); // 100ms
@@ -16,7 +19,7 @@ const StepCounter = () => {
                     setSteps(prevSteps => prevSteps + 1);
                 },
                 error: error => {
-                    console.log("The sensor is not available");
+                    console.log(error);
                 }
             });
 
@@ -26,11 +29,11 @@ const StepCounter = () => {
     }, []);
 
     if (steps == 20) {
-        Alert.alert("Gratulálok", "Már " + `${steps}` + " lépést megtettél, hajrá!", [
-            {
-                text: 'OK',
-            }
-        ]);
+        showToast('success', 'Gratulálok!', `Már ${steps} lépést megtettél, így tovább!`, 5000, notificationsEnabled);
+    }
+    
+    if (steps == 100) {
+        showToast('success', 'Gratulálok!', `Már ${steps} lépést megtettél, így tovább!`, 5000, notificationsEnabled);
     }
 
     return (

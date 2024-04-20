@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Pressable, StyleSheet, Text, TouchableOpacity, Vi
 import { auth } from '../Services/firebase';
 import { updatePassword } from 'firebase/auth';
 import 'firebase/firestore';
+import { AlertWindow } from './Alert';
 
 const PasswordReset = ({navigation}) => {
   const [password, setPassword] = useState('');
@@ -16,14 +17,6 @@ const PasswordReset = ({navigation}) => {
   };
   const changePasswordAgainVisibility = () => { 
     setShowPasswordAgain(!showPasswordAgain);
-};
- 
-  function AlertWindow (title, message) {
-    Alert.alert(title, message, [
-        {
-            text: 'OK',
-        }
-    ]);
   };
 
   const validateInputs = (password, passwordAgain) => {

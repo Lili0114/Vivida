@@ -13,13 +13,13 @@ const PlanClosing = ({navigation}) => {
           </View>
           <View style={styles.buttonContainer}>
               <TouchableOpacity>
-                  <Pressable style={styles.button} onPress={() => navigation.navigate('Goals')}>
-                      <Text style={styles.buttonText}>CÉLJAIM MEGNÉZÉSE</Text>
+                  <Pressable style={[styles.button, {borderColor: '#C5FE37'}]} onPress={() => navigation.navigate('Célok')}>
+                      <Text style={styles.buttonText}>CÉLJAIM MEGTEKINTÉSE</Text>
                   </Pressable>
               </TouchableOpacity>
               <TouchableOpacity>
-                  <Pressable style={styles.button} onPress={() => navigation.navigate('Plans')}>
-                      <Text style={styles.buttonText}>TOVÁBBI EDZÉSTERVEK</Text>
+                  <Pressable style={styles.button} onPress={() => navigation.navigate('Kezdőlap')}>
+                      <Text style={styles.buttonText}>VISSZA A FŐOLDALRA</Text>
                   </Pressable>
               </TouchableOpacity>
           </View>
@@ -51,7 +51,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 'auto',
     marginRight: 'auto',
-    borderRadius: 10
+    borderRadius: 10,
+    flex: 1
   },
 
   welcomeText: {
@@ -84,7 +85,9 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     marginLeft: 'auto',
-    marginRight: 'auto'
+    marginRight: 'auto',
+    flex: 0.5,
+    marginBottom: 100
   },
 
   button: {
@@ -98,8 +101,8 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    fontSize: 15,
-    color: '#958CAB',
+    fontSize: 16,
+    color: '#fff',
     marginLeft: 'auto',
     marginRight: 'auto'
   },

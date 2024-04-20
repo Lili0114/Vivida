@@ -14,6 +14,13 @@ import com.facebook.soloader.SoLoader
 import com.facebook.reactnative.androidsdk.FBSDKPackage
 import com.google.firebase.FirebaseApp
 import com.google.firebase.FirebaseOptions
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+import android.util.Log
+import android.widget.Toast 
+import android.content.Context
+import com.google.android.gms.tasks.OnCompleteListener
 
 class MainApplication : Application(), ReactApplication {
 
@@ -46,9 +53,9 @@ class MainApplication : Application(), ReactApplication {
       FirebaseApp.initializeApp(this, options, "secondary")
   }
 
-
   override fun onCreate() {
     super.onCreate()
+    createNotificationChannel()
     SoLoader.init(this, false)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
       // If you opted-in for the New Architecture, we load the native entry point for this app.

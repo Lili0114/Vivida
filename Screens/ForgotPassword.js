@@ -4,6 +4,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import { sendPasswordResetEmail } from "firebase/auth";
 import {auth} from '../Services/firebase';
 import { TextInput } from 'react-native-paper';
+import { AlertWindow } from './Alert';
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState('');
@@ -11,18 +12,10 @@ const ForgotPassword = () => {
     const sendEmail = (e) => {
       sendPasswordResetEmail(auth, email)
           .then(() => {
-            Alert.alert("Siker", "Email elküldve!", [
-              {
-                text: 'OK',
-              }
-            ]);
+            AlertWindow("Siker", "Email elküldve!");
           })
           .catch((error) => {
-            Alert.alert("Hiba", `Az emailt nem sikerült elküldeni.`, [
-              {
-                  text: 'OK',
-              }
-            ]);
+            AlertWindow("Hiba", "Az emailt nem sikerült elküldeni.");
           })
     }
 

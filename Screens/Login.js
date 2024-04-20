@@ -5,10 +5,7 @@ import { auth, db } from '../Services/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import 'firebase/firestore';
 import { doc, getDoc } from "firebase/firestore";
-
-
-//import { LoginManager, AccessToken, LoginButton } from 'react-native-fbsdk';
-//import { GoogleSignin, GoogleSigninButton } from '@react-native-google-signin/google-signin';
+import { AlertWindow } from './Alert';
 
 const Login = ({navigation}) => {
   const [email, setEmail] = useState('');
@@ -18,78 +15,23 @@ const Login = ({navigation}) => {
   const changePasswordVisibility = () => { 
       setShowPassword(!showPassword);
   };
- 
-  function AlertWindow (message) {
-    Alert.alert("Hiba", message, [
-        {
-            text: 'OK',
-        }
-    ]);
-  };
 
   const validateInputs = (email, password) => {
     if (email.trim() === '') {
-        AlertWindow('Email cím nem lehet üres!');
+        AlertWindow('Hiba','Email cím nem lehet üres!');
         return false;
     }
     else if(password.trim() === ''){
-        AlertWindow('Jelszó nem lehet üres!');
+        AlertWindow('Hiba','Jelszó nem lehet üres!');
         return false;
     }
     else if(!email.includes('@')){
-        AlertWindow('Nem megfelelő az email cím!');
+        AlertWindow('Hiba','Nem megfelelő az email cím!');
         return false;
     }
 
     return true;
   };
-
-  /*async function FacebookSignIn() {
-    let cred = await onFacebookButtonPress();
-    console.log("cred: ", cred);
-  }
-  
-  async function onFacebookButtonPress() {
-    // Attempt login with permissions
-    const result = await LoginManager.logInWithPermissions(['public_profile', 'email']);
-  
-    if (result.isCancelled) {
-      throw 'User cancelled the login process';
-    }
-  
-    // Once signed in, get the users AccessToken
-    const data = await AccessToken.getCurrentAccessToken();
-  
-    if (!data) {
-      throw 'Something went wrong obtaining access token';
-    }
-  
-    // Create a Firebase credential with the AccessToken
-    const facebookCredential = auth.FacebookAuthProvider.credential(data.accessToken);
-  
-    // Sign-in the user with the credential
-    return auth().signInWithCredential(facebookCredential);
-  }
-  <View>
-      <LoginButton
-        onLoginFinished={(error, result) => {
-          if (error) {
-            console.log('Facebook login error:', error);
-          } else if (result.isCancelled) {
-            console.log('Facebook login cancelled.');
-          } else {
-            FacebookSignIn();
-          }
-        }}
-        onLogoutFinished={() => console.log('Facebook logout finished.')}
-      />
-      </View>
-  
-
-    const handleFacebookLogin = () => {
-    signInWithFacebook();
-  };
-  */
   
   const signIn = async (email, password) => {
 
@@ -111,7 +53,7 @@ const Login = ({navigation}) => {
 
         return user;
       } catch (error) {
-        AlertWindow(`A bejelentkezés nem sikerült. Kérjük, ellenőrizze, hogy az adatok helyesek-e.`);
+        AlertWindow('Hiba',`A bejelentkezés nem sikerült. Kérjük, ellenőrizze, hogy az adatok helyesek-e.`);
       }
     }
   };
@@ -125,6 +67,7 @@ const Login = ({navigation}) => {
         <Text style={styles.welcomeText}>Üdv újra itt!</Text>
         <View style={styles.field}>
           <TextInput 
+                accessibilityLabel='Email'
                 label="Email cím"
                 textContentType='emailAddress'
                 value={email} 
@@ -138,6 +81,7 @@ const Login = ({navigation}) => {
         <View style={styles.field}>
           <View style={styles.passwordContainer}>
               <TextInput 
+                accessibilityLabel='Jelszó'
                 label="Jelszó"
                 textContentType='password'
                 value={password}
@@ -160,7 +104,7 @@ const Login = ({navigation}) => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity>
-          <Pressable style={styles.loginButton} onPress={() => signIn(email,password)}>
+          <Pressable accessibilityLabel='Login' style={styles.loginButton} onPress={() => signIn(email,password)}>
             <Text style={styles.loginButtonText}>FOLYTATOM A FEJLŐDÉST</Text>
           </Pressable>
         </TouchableOpacity>
@@ -171,9 +115,7 @@ const Login = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.bottomContainer}>
-        <Text style={styles.bottomText}>Az alábbiak közül választok - FB, Google autentikáció?</Text>
-      </View>
+      <View style={styles.bottomContainer}></View>
     </KeyboardAvoidingView>
   )
 }

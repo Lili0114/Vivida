@@ -1,5 +1,5 @@
-import React from 'react';
-import { Pressable, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { FlatList, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -15,13 +15,15 @@ import Goals from './Screens/Goals';
 import StepCounter from './Screens/StepCounter';
 import Rewards from './Screens/Rewards';
 import PlanDetails from './Screens/PlanDetails';
+import PlanClosing from './Screens/PlanClosing';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AfterRegister from './Screens/AfterRegister';
 import AfterRegisterDetails from './Screens/AfterRegisterDetails';
 import PasswordReset from './Screens/PasswordReset';
 import AccountEdit from './Screens/AccountEdit';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Toast from 'react-native-toast-message';
+import { NotificationsEnabledProvider } from './Screens/NotificationsEnabledContext';
 
 const MyTheme = {
   ...DefaultTheme,
@@ -78,14 +80,17 @@ function Tabs() {
               borderColor: focused ? '#C5FE37' : 'transparent',
               padding: 5
             }}>
-              <Ionicons name="barbell-outline" color={'#958CAB'} size={30} />
+              <Ionicons name="journal-outline" color={'#958CAB'} size={30} />
             </View>
           ),
         }}  
       />
       <Tab.Screen name='Célok' component={Goals} 
         options={{ 
-          headerShown: false, 
+          headerShown: true,
+          headerTitleAlign: 'center',
+          headerStyle: {backgroundColor: '#0B0A0C'},
+          headerTitleStyle: {color: '#C5FE37', fontSize: 24},  
           tabBarIcon: ({focused}) => (
             <View style={{ 
               borderRadius: 30,
@@ -100,7 +105,10 @@ function Tabs() {
       />
       <Tab.Screen name='Stopper' component={Stopwatch} 
         options={{ 
-          headerShown: false, 
+          headerShown: true,
+          headerTitleAlign: 'center',
+          headerStyle: {backgroundColor: '#0B0A0C'},
+          headerTitleStyle: {color: '#C5FE37', fontSize: 24},  
           tabBarIcon: ({focused}) => (
             <View style={{ 
               borderRadius: 30,
@@ -108,14 +116,14 @@ function Tabs() {
               borderColor: focused ? '#C5FE37' : 'transparent',
               padding: 5
             }}>
-              <Ionicons name="barbell" color={'#958CAB'} size={30} />
+              <Ionicons name="barbell-outline" color={'#958CAB'} size={30} />
             </View>
           ),
         }}  
       />
       <Tab.Screen name='Teljesítményeid' component={Rewards}
         options={{ 
-          headerShown: false,
+          headerShown: true,
           headerTitleAlign: 'center',
           headerStyle: {backgroundColor: '#0B0A0C'},
           headerTitleStyle: {color: '#C5FE37', fontSize: 24}, 
@@ -126,7 +134,7 @@ function Tabs() {
               borderColor: focused ? '#C5FE37' : 'transparent',
               padding: 5
             }}>
-              <MaterialCommunityIcons name="medal-outline" color={'#958CAB'} size={30} />
+              <Ionicons name="ribbon-outline" color={'#958CAB'} size={30} />
             </View>
           ),
         }}  
@@ -156,6 +164,7 @@ function Tabs() {
 const App = () => {
 
   return (
+    <NotificationsEnabledProvider>
     <NavigationContainer theme={MyTheme}>
       <Stack.Navigator>
         
@@ -282,7 +291,17 @@ const App = () => {
             headerStyle: {
               backgroundColor: '#0B0A0C'
             },
-            headerTintColor: '#FFF'
+            headerTitleStyle: {
+              color: '#C5FE37'
+            },
+            headerTintColor: '#C5FE37',
+          }} />
+
+        <Stack.Screen
+          name="PlanClosing"
+          component={PlanClosing}
+          options={{
+            headerShown: false
           }} />
 
         <Stack.Screen
@@ -318,7 +337,9 @@ const App = () => {
           }} />
        
       </Stack.Navigator>
+      <Toast />
     </NavigationContainer>
+    </NotificationsEnabledProvider>
   );
 };
 

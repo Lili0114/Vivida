@@ -1,21 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, Platform } from 'react-native';
+import React, { useState, useEffect, useReducer, useContext } from 'react';
+import { KeyboardAvoidingView, Image, Pressable, StyleSheet, Text, TouchableOpacity, View, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getAuth, updateProfile } from "firebase/auth";
 import 'firebase/database';
 import 'firebase/storage';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import { db, auth } from '../Services/firebase';
-import { doc, getDoc, collection } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, where, deleteDoc } from "firebase/firestore";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {Switch} from 'react-native-switch';
+import { showToast } from './Notification';
+import { NotificationsEnabledProvider, useNotificationsEnabled } from './NotificationsEnabledContext';
+
+const initialState = {
+  userData: null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'SET_USER_DATA':
+      return { ...state, userData: action.payload };
+    default:
+      throw new Error();
+  }
+}
 
 const Account = ({navigation}) => {
 
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [userData, setUserData] = useState(null);
+  const [state, setState] = useReducer(reducer, initialState);
+  const { notificationsEnabled, setNotificationsEnabled } = useNotificationsEnabled();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -23,13 +35,52 @@ const Account = ({navigation}) => {
       const userDocSnap = await getDoc(currentUserDoc);
 
       if (userDocSnap.exists()) {
-        setUserData(userDocSnap.data());
+        setState({ type: 'SET_USER_DATA', payload: userDocSnap.data() });
       }
-        else throw Error();
-      };
+    };
 
     fetchUserData();
-  }, [userData]);
+  }, [state.userData]);
+
+
+  const deleteUserPlan = async () => {
+    const userPlanCollection = collection(db, 'user_plan');
+    const q = query(userPlanCollection, where('user_id', '==', auth.currentUser.uid), where('completed', '==', false));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) {
+      showToast('error', 'Nincs kiválasztott terved!', '', 4000, notificationsEnabled);
+      return;
+    }
+    else{
+      const userPlan = querySnapshot.docs[0];
+
+      Alert.alert(
+        "Terv törlése",
+        "Biztos törölni akarod a terved? Ezzel elveszted az eddigi előrehaladásodat.",
+        [
+          { 
+            text: "Törlés", 
+            onPress: async () => {
+              const goalsCollection = collection(db, `user_plan/${userPlan.id}/goals`);
+              const goalsSnapshot = await getDocs(goalsCollection);
+              goalsSnapshot.docs.forEach(async (d) => {
+                await deleteDoc(doc(db, `user_plan/${userPlan.id}/goals`, d.id));
+              });
+
+              await deleteDoc(doc(db, 'user_plan', userPlan.id));
+              showToast('success', 'Terv törölve!', '', 4000, notificationsEnabled);
+              
+            } 
+          },
+          {
+            text: "Mégsem",
+            style: "cancel"
+          }
+        ]
+      );
+    }
+  };
+
 
   const handleLogout = () => {
     auth.signOut().then(() => {
@@ -62,38 +113,53 @@ const Account = ({navigation}) => {
         </View>
 
         <View style={styles.taskContainer}>
+          <Text style={styles.header}>TERVEK</Text>
+          <TouchableOpacity>
+              <Pressable onPress={() => deleteUserPlan()}>
+                <View style={styles.rewardContainer}>
+                  <Text style={[styles.rewardText, {marginRight: 153}]}>Jelenlegi terv törlése</Text>
+                  <MaterialIcons 
+                    name='keyboard-arrow-right'
+                    size={20}
+                    color='#C5FE37'
+                    style={{ marginLeft: 10}}
+                  />
+                </View>
+              </Pressable>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.taskContainer}>
           <Text style={styles.header}>ÉRTESÍTÉSEK</Text>
           <View style={{flex: 1, padding: 20 }}>
-          <Switch
-            /*value={notificationsEnabled}
-            onValueChange={setNotificationsEnabled}
-            circleStyle={{ backgroundColor: notificationsEnabled ? '#C5FE37' : '#958CAB' }}*/
-            value={false}
-            onValueChange={(val) => console.log(val)}
-            disabled={false}
-            barHeight={35}
-            circleBorderWidth={0}
-            containerStyle={{ borderWidth: 1, borderColor: '#958CAB'}}
-            backgroundActive={'#0B0A0C'}
-            backgroundInactive={'#0B0A0C'} 
-            circleActiveColor={'#C5FE37'}
-            circleInActiveColor={'#958CAB'}
-            switchLeftPx={2}
-            switchRightPx={2}
-            switchWidthMultiplier={2}
-            changeValueImmediately={true}
-            innerCircleStyle={{ alignItems: "center", justifyContent: "center", borderRadius: 10, height: 35 }}
-            renderActiveText={false}
-            renderInActiveText={false}
-            switchBorderRadius={10} 
-          />
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              /*circleStyle={{ backgroundColor: notificationsEnabled ? '#C5FE37' : '#958CAB' }}*/
+              disabled={false}
+              barHeight={35}
+              circleBorderWidth={0}
+              containerStyle={{ borderWidth: 1, borderColor: '#958CAB'}}
+              backgroundActive={'#0B0A0C'}
+              backgroundInactive={'#0B0A0C'} 
+              circleActiveColor={'#C5FE37'}
+              circleInActiveColor={'#958CAB'}
+              switchLeftPx={2}
+              switchRightPx={2}
+              switchWidthMultiplier={2}
+              changeValueImmediately={true}
+              innerCircleStyle={{ alignItems: "center", justifyContent: "center", borderRadius: 10, height: 35 }}
+              renderActiveText={false}
+              renderInActiveText={false}
+              switchBorderRadius={10} 
+            />
           </View>
         </View>
 
         <View style={styles.taskContainer}>
           <Text style={styles.header}>FIÓK</Text>
           <TouchableOpacity>
-            <Pressable onPress={() => navigation.navigate('AccountEdit', { userData: userData })}>
+            <Pressable onPress={() => navigation.navigate('AccountEdit', { userData: state.userData })}>
               <View style={styles.rewardContainer}>
                 <Text style={styles.rewardText}>Adataim módosítása</Text>
                 <MaterialIcons 
@@ -108,7 +174,7 @@ const Account = ({navigation}) => {
 
           <TouchableOpacity>
             <Pressable onPress={handleLogout}>
-              <View style={[styles.rewardContainer, {marginTop: 20}]}>
+              <View style={[styles.rewardContainer, {marginTop: 10}]}>
                 <Text style={[styles.rewardText, {marginRight: 202}]}>Kijelentkezés</Text>
                 <MaterialIcons 
                   name='keyboard-arrow-right'

@@ -3,22 +3,13 @@ import { IconButton, TextInput } from 'react-native-paper';
 import { StyleSheet, Text, TouchableOpacity, View, Pressable, Alert, KeyboardAvoidingView } from 'react-native';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from '../Services/firebase';
-
+import { AlertWindow } from "./Alert";
 
 const Register = ({navigation}) => {
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
     const [showPassword, setShowPassword] = useState(false);
-  
-    function AlertWindow (title, message) {
-        Alert.alert(title, message, [
-            {
-                text: 'OK',
-            }
-        ]);
-    };
 
     const validateInputs = async (email, password) => {
 
@@ -71,6 +62,7 @@ const Register = ({navigation}) => {
                 <Text style={styles.regularText}>A motivációról gondoskodunk</Text>
                 <View style={styles.field}>
                     <TextInput 
+                        accessibilityLabel="Email"
                         label="Email cím"
                         textContentType='emailAddress'
                         value={email} 
@@ -85,6 +77,7 @@ const Register = ({navigation}) => {
                 <View style={styles.field}>
                     <View style={styles.passwordContainer}>
                         <TextInput 
+                            accessibilityLabel="Jelszó"
                             label="Jelszó"
                             textContentType='password'
                             value={password}
@@ -107,15 +100,13 @@ const Register = ({navigation}) => {
 
             <View style={styles.buttonContainer}>
                 <TouchableOpacity>
-                    <Pressable style={styles.regButton} onPress={() => signUp(email,password)}>
+                    <Pressable accessibilityLabel="Register" style={styles.regButton} onPress={() => signUp(email,password)}>
                         <Text style={styles.regButtonText}>REGISZTRÁLOK</Text>
                     </Pressable>
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.bottomContainer}>
-                <Text style={styles.bottomText}>Az alábbiak közül választok - FB, Google</Text>
-            </View>
+            <View style={styles.bottomContainer}></View>
         </KeyboardAvoidingView>
     )
 }

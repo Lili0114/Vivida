@@ -3,4 +3,6 @@
     <string name="facebook_app_id">1129876394690997</string>
     <string name="fb_login_protocol_scheme">fb1234</string>
     <string name="facebook_client_token">20fc41993439cf2a03e642a693e17577</string>
+    <string name="channel_name">Kihívás</string>
+    <string name="channel_description">Új kihívás elérhető!</string>
 </resources>

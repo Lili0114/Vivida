@@ -8,6 +8,7 @@ import {Picker} from '@react-native-picker/picker';
 import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import { Image } from 'react-native-elements';
+import { AlertWindow } from "./Alert";
 
 const AccountEdit = ({navigation, route}) => {
     const {userData} = route.params;
@@ -20,7 +21,7 @@ const AccountEdit = ({navigation, route}) => {
         };
     
         fetchUserData();
-    }, [imageUri]);
+    }, [userData.profilePicture]);
 
     //Kötelező
     const [username, setUsername] = useState(userData ? `${userData.username}` : '');
@@ -66,6 +67,11 @@ const AccountEdit = ({navigation, route}) => {
                         await task;
                         const url = await uploadRef.getDownloadURL();
                         setImageUri(url);
+
+                        if (userData) {
+                            userData.profilePicture = url;
+                        }
+
                         return url;
                 
                       } catch (e) {
@@ -82,14 +88,6 @@ const AccountEdit = ({navigation, route}) => {
             AlertWindow("Hiba", err);
             return;
           }
-    };
-  
-    function AlertWindow (title, message) {
-        Alert.alert(title, message, [
-            {
-                text: 'OK',
-            }
-        ]);
     };
 
     const usernameAlreadyExists = async (username) => {
@@ -147,8 +145,6 @@ const AccountEdit = ({navigation, route}) => {
                     gender: gender,
                     height: height,
                     weight: weight,
-                    level: 1,
-                    xp: 0,
                     profilePicture: imageUri
                 };
 

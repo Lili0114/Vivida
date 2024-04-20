@@ -8,6 +8,7 @@ import {Picker} from '@react-native-picker/picker';
 import {launchImageLibrary} from 'react-native-image-picker';
 import storage from '@react-native-firebase/storage';
 import { Image } from 'react-native-elements';
+import { AlertWindow } from "./Alert";
 
 const AfterRegisterDetails = ({navigation}) => {
 
@@ -71,14 +72,6 @@ const AfterRegisterDetails = ({navigation}) => {
             AlertWindow("Hiba", err);
             return;
           }
-    };
-  
-    function AlertWindow (title, message) {
-        Alert.alert(title, message, [
-            {
-                text: 'OK',
-            }
-        ]);
     };
 
     const usernameAlreadyExists = async (username) => {
@@ -157,12 +150,13 @@ const AfterRegisterDetails = ({navigation}) => {
                         style={{ borderRadius: 100, width: 130, height: 130 }}
                         source={imageUri ? {uri: imageUri} : require('../assets/images/blank-profile-picture.png')}
                     />
-                    <Pressable onPress={uploadImage}>
+                    <Pressable accessibilityLabel="UploadImage" onPress={uploadImage}>
                         <Text style={{color: '#48454c', fontSize: 12, padding: 10}}>Profilkép feltöltése</Text>
                     </Pressable>
                 </View>
                 <View style={styles.field}>
                     <TextInput
+                        accessibilityLabel="Felhasználónév"
                         label={"Felhasználónév *"}
                         placeholderTextColor={'#B7B7B7'}
                         value={username}
@@ -174,6 +168,7 @@ const AfterRegisterDetails = ({navigation}) => {
                 </View>
                 <View style={styles.field}>
                     <TextInput
+                        accessibilityLabel="Teljes név"
                         label={"Teljes név *"}
                         placeholderTextColor={'#B7B7B7'}
                         value={fullName}
@@ -186,6 +181,9 @@ const AfterRegisterDetails = ({navigation}) => {
                 <View style={[styles.field, {height: 75}]}>
                     <Text style={{color: '#48454c', fontSize: 12, marginTop: 10, marginLeft: 4}}>Nem *</Text>
                     <Picker        
+                        accessibilityLabel="Nem"
+                        accessible={true}
+                        accessibilityValue={'nem'}
                         selectedValue={gender}
                         dropdownIconColor={'#FFF'}
                         onValueChange={(itemValue, itemIndex) => setGender(itemValue)}
@@ -205,6 +203,7 @@ const AfterRegisterDetails = ({navigation}) => {
                         textColor='#958CAB'
                     />
                     <IconButton
+                        accessibilityLabel="calendar"
                         icon="calendar"
                         size={20}
                         onPress={showDatepicker}
@@ -214,6 +213,8 @@ const AfterRegisterDetails = ({navigation}) => {
                 </View>
                     {showDatePicker && (
                         <DateTimePicker
+                            accessible={true}
+                            accessibilityLabel="Születési dátum"
                             value={birthdate}
                             mode={'date'}
                             display="default"
@@ -228,6 +229,7 @@ const AfterRegisterDetails = ({navigation}) => {
                     )}
                 <View style={styles.field}> 
                     <TextInput
+                        accessibilityLabel="Magasság"
                         label={"Magasság (cm)"}
                         placeholderTextColor={'#B7B7B7'}
                         value={height.toString()}
@@ -240,6 +242,7 @@ const AfterRegisterDetails = ({navigation}) => {
                 </View>
                 <View style={styles.field}>
                     <TextInput
+                        accessibilityLabel="Testsúly"
                         label={"Testsúly (kg)"}
                         placeholderTextColor={'#B7B7B7'}
                         value={weight.toString()}
@@ -254,7 +257,7 @@ const AfterRegisterDetails = ({navigation}) => {
 
             <View style={styles.buttonContainer}>
                 <TouchableOpacity>
-                    <Pressable style={styles.loginButton} onPress={() => setDetails(username, birthdate, fullName, gender, height, weight)}>
+                    <Pressable accessibilityLabel="SetDetails" style={styles.loginButton} onPress={() => setDetails(username, birthdate, fullName, gender, height, weight)}>
                         <Text style={styles.loginButtonText}>TOVÁBB</Text>
                     </Pressable>
                 </TouchableOpacity>
