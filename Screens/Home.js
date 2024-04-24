@@ -133,8 +133,12 @@ const Home = ({navigation}) => {
             setState({ type: 'SET_PLAN_PROGRESS', payload: planProgress });
 
             // Össz kalória
+            const userplansCollection = collection(db, 'user_plan');
+            const p = query(userplansCollection, where('user_id', '==', auth.currentUser.uid));
+            const pSnapshot = await getDocs(p);
+            
             let totalBurnedCalories = 0;
-            for (const doc of querySnapshot.docs) {
+            for (const doc of pSnapshot.docs) {
                 const goalsCollection = collection(doc.ref, 'goals');
                 const goalsSnapshot = await getDocs(goalsCollection);
                 for (const goalDoc of goalsSnapshot.docs) {
@@ -236,7 +240,7 @@ const Home = ({navigation}) => {
                             color='#FFF'
                         />
                         <Text style={[styles.statText, { color: '#C5FE37'}]}>
-                            { state.totalBurnedCalories ? state.totalBurnedCalories : 0}
+                           {state.totalBurnedCalories ? state.totalBurnedCalories : 0}
                         </Text>
                         <Text style={[styles.statText, { color: '#958CAB'}]}>kcal</Text>
                     </View>

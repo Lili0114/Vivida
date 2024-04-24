@@ -15,7 +15,7 @@ export function NotificationsEnabledProvider({ children }) {
 export function useNotificationsEnabled() {
     const context = useContext(NotificationsEnabledContext);
     if (context === undefined) {
-        throw new Error('useNotificationsEnabled must be used within a NotificationsEnabledProvider');
+        throw new Error('useNotificationsEnabled must be within a NotificationsEnabledProvider');
     }
     return context;
 }

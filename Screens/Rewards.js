@@ -69,8 +69,7 @@ const Rewards = () => {
                 const badgeIds = [].concat(...completedGoalBadgeIds);
                 const badges = allBadges.filter(badge => badgeIds.includes(badge.id));
 
-                dispatch({ type: 'SET_BADGES', payload: badges });
-                console.log(badges);
+                setState({ type: 'SET_BADGES', payload: badges });
             };
     
             const fetchData = async () => {
@@ -80,7 +79,7 @@ const Rewards = () => {
                     
             const intervalId = setInterval(() => {
                 fetchData();
-            }, 10000);
+            }, 5000);
             
             return () => {
                 clearInterval(intervalId);
@@ -95,15 +94,17 @@ const Rewards = () => {
         <SafeAreaView style={styles.container}>
             <View style={styles.taskContainer}>
                 <Text style={styles.header}>BEGYŰJTÖTT KITŰZŐK</Text>
-                <View style={styles.rewardContainer}>      
+                <View style={styles.rewardContainer}>   
+                <View style={{flexDirection: 'row', margin: 5}} > 
                     {state.badges ? (
                     <>
                         {state.badges.map((badge) => (
-                            <Image source={{ uri: badge.image }} style={{ width: 50, height: 50 }} key={badge.id}/>
+                            <Image source={{ uri: badge.image }} style={styles.badge} key={badge.id}/>
                         ))} 
                     </>) 
                     : (<Text style={styles.regularText}>Még nincsenek kitűzőid.</Text>)
                     }
+                </View>
                 </View>
             </View>
             <View style={styles.taskContainer}>
@@ -155,7 +156,8 @@ const styles = StyleSheet.create({
         marginTop: 10,
         marginHorizontal: 20,
         padding: 5,
-        height: 200
+        //height: 200,
+        //flexDirection: 'row'
     },
 
     boxText: {
@@ -184,6 +186,12 @@ const styles = StyleSheet.create({
         flex: 2,
         flexDirection: 'column',
     },
+
+    badge: {
+        width: 65, 
+        height: 65,
+
+    }
 })
 
 export default Rewards

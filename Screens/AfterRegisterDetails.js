@@ -117,7 +117,6 @@ const AfterRegisterDetails = ({navigation}) => {
         }
         else{
             try {
-
                 const newUser = {
                     email: auth.currentUser.email,
                     username: username,
@@ -135,7 +134,7 @@ const AfterRegisterDetails = ({navigation}) => {
                     navigation.navigate('HomePage');
                 });
             } catch (error) {
-                AlertWindow('Hiba',`Hiba lépett fel az adatok megadása során! ${error}`);
+                AlertWindow('Hiba',`Hiba lépett fel az adatok megadása során!`);
                 return;
             }
         }

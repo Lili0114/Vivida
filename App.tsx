@@ -167,7 +167,6 @@ const App = () => {
     <NotificationsEnabledProvider>
     <NavigationContainer theme={MyTheme}>
       <Stack.Navigator>
-        
         <Stack.Screen
           name="Welcome"
           component={Welcome}

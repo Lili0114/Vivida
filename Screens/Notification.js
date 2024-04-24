@@ -1,5 +1,4 @@
 import Toast from 'react-native-toast-message';
-import { useNotificationsEnabled } from './NotificationsEnabledContext';
 
 let toastQueue = [];
 
