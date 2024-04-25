@@ -10,6 +10,7 @@ const initialState = {
     completedPlans: [],
     planDetails: [],
     lastFetch: new Date(),
+    refresh: false
 };
 
 function reducer(state, action) {
@@ -22,6 +23,8 @@ function reducer(state, action) {
             return { ...state, planDetails: action.payload };
         case 'SET_LAST_FETCH':
             return { ...state, lastFetch: action.payload };
+        case 'DO_REFRESH':
+            return { ...state, refresh: action.payload };
         default:
             throw new Error();
     }
@@ -37,6 +40,11 @@ const Rewards = () => {
                 const userPlansSnap = await getDocs(collection(db, 'user_plan'), 
                     where('user_id', '==', auth.currentUser.uid)
                 );
+
+                if (userPlansSnap.empty) {
+                    setState({ type: 'DO_REFRESH', payload: true });
+                    return;
+                }
 
                 const completedPlans = userPlansSnap.docs
                     .map(doc => ({ id: doc.id, ...doc.data() }))
@@ -96,13 +104,13 @@ const Rewards = () => {
                 <Text style={styles.header}>BEGYŰJTÖTT KITŰZŐK</Text>
                 <View style={styles.rewardContainer}>   
                 <View style={{flexDirection: 'row', margin: 5}} > 
-                    {state.badges ? (
+                    {state.badges && state.refresh == false ? (
                     <>
                         {state.badges.map((badge) => (
                             <Image source={{ uri: badge.image }} style={styles.badge} key={badge.id}/>
                         ))} 
                     </>) 
-                    : (<Text style={styles.regularText}>Még nincsenek kitűzőid.</Text>)
+                    : (<Text style={[styles.regularText, {marginLeft: 80}]}>Még nincsenek kitűzőid.</Text>)
                     }
                 </View>
                 </View>
@@ -110,7 +118,7 @@ const Rewards = () => {
             <View style={styles.taskContainer}>
                 <Text style={styles.header}>TELJESÍTETT TERVEK</Text>
                 <View style={styles.rewardContainer}>
-                {state.completedPlans ? (
+                {state.completedPlans && state.refresh == false ? (
                     <>
                     {state.completedPlans.map((plan) => {
                         const planDetails = state.planDetails.find(details => details.id === plan.plan_id);

@@ -60,7 +60,6 @@ const PasswordReset = ({navigation}) => {
         <View style={styles.passwordContainer}>
             <TextInput 
                 label="Új jelszó"
-                keyboardType='password'
                 value={password} 
                 onChangeText={text => setPassword(text)}
                 style={styles.passwordField}

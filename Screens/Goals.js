@@ -13,6 +13,7 @@ const initialState = {
     completedGoals: [],
     notCompletedGoals: [],
     lastFetch: new Date(),
+    refresh: false
 };
 
 function reducer(state, action) {
@@ -29,6 +30,8 @@ function reducer(state, action) {
             return { ...state, notCompletedGoals: action.payload };
         case 'SET_LAST_FETCH':
             return { ...state, lastFetch: action.payload };
+        case 'DO_REFRESH':
+            return { ...state, refresh: action.payload };
         default:
             throw new Error();
     }
@@ -47,6 +50,7 @@ const Goals = () => {
             setState({ type: 'SET_QUERY', payload: q });
             const querySnapshot = await getDocs(q);            
             if (querySnapshot.empty) {
+                setState({ type: 'DO_REFRESH', payload: true });
                 return;
             }
     
@@ -148,8 +152,7 @@ const Goals = () => {
     return (
         <View style={styles.container}>
             <ScrollView>
-
-                {state.chosenPlan && state.chosenPlan.completed == false ? (
+            {state.chosenPlan && state.refresh == false ? (
                     <>
                         <Text style={styles.header}>{state.planDetail ? `${state.planDetail.type} - ${state.planDetail.difficulty} szint` : ''}</Text>
                         <Text style={styles.category}>Hátralévő</Text>

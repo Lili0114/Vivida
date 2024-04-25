@@ -27,6 +27,7 @@ const initialState = {
     totalBurnedCalories: 0,
     lastPlanUpdate: Date.now(),
     lastFetch: new Date(),
+    refresh: false
 };
 
 function reducer(state, action) {
@@ -57,6 +58,8 @@ function reducer(state, action) {
             return { ...state, lastPlanUpdate: action.payload };
         case 'SET_LAST_FETCH':
             return { ...state, lastFetch: action.payload };
+        case 'DO_REFRESH':
+            return { ...state, refresh: action.payload };
         default:
             throw new Error();
     }
@@ -112,7 +115,25 @@ const Home = ({navigation}) => {
             const userPlanCollection = collection(db, 'user_plan');
             const q = query(userPlanCollection, where('user_id', '==', auth.currentUser.uid), where('completed', '==', false));
             const querySnapshot = await getDocs(q);
+
+            // Össz kalória
+            const userplansCollection = collection(db, 'user_plan');
+            const p = query(userplansCollection, where('user_id', '==', auth.currentUser.uid));
+            const pSnapshot = await getDocs(p);
+
+            let totalBurnedCalories = 0;
+            for (const doc of pSnapshot.docs) {
+                const goalsCollection = collection(doc.ref, 'goals');
+                const goalsSnapshot = await getDocs(goalsCollection);
+                for (const goalDoc of goalsSnapshot.docs) {
+                    const goalData = goalDoc.data();
+                    totalBurnedCalories += goalData.burned_calories;
+                }
+            }                    
+            setState({ type: 'SET_TOTAL_BURNED_CALORIES', payload: totalBurnedCalories });
+
             if (querySnapshot.empty) {
+                setState({ type: 'DO_REFRESH', payload: true });
                 return;
             }
             setState({ type: 'LAST_PLAN_UPDATE', payload: Date.now() });
@@ -131,23 +152,6 @@ const Home = ({navigation}) => {
             const completedGoals = goalsData.filter(goal => goal.completed).length;
             const planProgress = (completedGoals / totalGoals) * 100;
             setState({ type: 'SET_PLAN_PROGRESS', payload: planProgress });
-
-            // Össz kalória
-            const userplansCollection = collection(db, 'user_plan');
-            const p = query(userplansCollection, where('user_id', '==', auth.currentUser.uid));
-            const pSnapshot = await getDocs(p);
-            
-            let totalBurnedCalories = 0;
-            for (const doc of pSnapshot.docs) {
-                const goalsCollection = collection(doc.ref, 'goals');
-                const goalsSnapshot = await getDocs(goalsCollection);
-                for (const goalDoc of goalsSnapshot.docs) {
-                    const goalData = goalDoc.data();
-                    totalBurnedCalories += goalData.burned_calories;
-                }
-            }                    
-            setState({ type: 'SET_TOTAL_BURNED_CALORIES', payload: totalBurnedCalories });
-
         };
 
         const workouts = async () => {
@@ -183,7 +187,7 @@ const Home = ({navigation}) => {
             clearInterval(intervalId);
         };
         
-    }, [state.userData, state.chosenPlan, state.lastPlanUpdate]);
+    }, [state.userData, state.chosenPlan, state.lastPlanUpdate, state.totalBurnedCalories]);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -240,7 +244,7 @@ const Home = ({navigation}) => {
                             color='#FFF'
                         />
                         <Text style={[styles.statText, { color: '#C5FE37'}]}>
-                           {state.totalBurnedCalories ? state.totalBurnedCalories : 0}
+                           {state.totalBurnedCalories}
                         </Text>
                         <Text style={[styles.statText, { color: '#958CAB'}]}>kcal</Text>
                     </View>
@@ -283,7 +287,7 @@ const Home = ({navigation}) => {
 
                 <View style={styles.taskContainer}>
                     <Text style={styles.header}>ELŐREHALADÁS</Text>
-                    {state.chosenPlan ? (
+                    {state.chosenPlan && state.refresh == false ? (
                     <View style={{alignItems: 'center', marginVertical: 25}}>
                         <View style={[styles.planProgressBar,]}>
                             <View style={[styles.planProgress, { width: `${state.planProgress}%` }]} />
@@ -297,7 +301,7 @@ const Home = ({navigation}) => {
                 <View style={styles.taskContainer}>
                     <Text style={styles.header}>AKTUÁLIS CÉLOK</Text>
 
-                    {state.chosenPlan ? (
+                    {state.chosenPlan && state.refresh == false ? (
                     <>
                         {state.goals.slice(0,3).map((goal) => (
 
